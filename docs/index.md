@@ -14,7 +14,7 @@ description: Hafiz - Enterprise-grade S3-compatible object storage written in Ru
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.1.0-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.0.0-blue" alt="Version">
   <img src="https://img.shields.io/badge/rust-1.85+-orange" alt="Rust">
   <img src="https://img.shields.io/badge/license-Dual%20(AGPL%2FCommercial)-green" alt="License">
   <img src="https://img.shields.io/badge/S3%20API-76%2B%20endpoints-blueviolet" alt="S3 API">

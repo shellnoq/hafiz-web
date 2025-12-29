@@ -5,29 +5,48 @@ description: Version history
 
 # Changelog
 
-## [0.1.0] - 2024-12-08
+All notable changes to Hafiz will be documented here.
 
-### Added
+## [1.0.0] - 2025-01-15
+
+### Production Ready Release
+
+Hafiz is now production-ready for enterprise deployments.
+
+### Core Features
 
 - Full S3 API compatibility (76+ endpoints)
-- Multi-part uploads
-- Object versioning
-- Lifecycle policies
+- Multi-part uploads with resumable support
+- Object versioning with delete markers
+- Lifecycle policies with automatic expiration
 - Server-side encryption (AES-256-GCM)
-- Object Lock (WORM)
-- Bucket policies
-- LDAP integration
-- Admin API & UI
-- Prometheus metrics
-- Event notifications
-- Cluster mode
-- Helm chart
-- CLI tool
+- Object Lock (WORM) for compliance
+- Bucket policies with IAM-style access control
+- LDAP/Active Directory integration
+- Admin API & Web UI
+- Web File Browser
+- Prometheus metrics & Grafana dashboards
+- Event notifications (webhooks)
+- Multi-server cluster mode
+- Cross-network replication
+- Air-gapped system support
+- Helm chart for Kubernetes
+- CLI tool (hafiz-cli)
 
-### Technical
+### Technical Highlights
 
 - 33,000+ lines of Rust
-- 9 crates
+- 9 modular crates
 - PostgreSQL & SQLite support
+- Async I/O with Tokio
+- Zero-copy streaming where possible
+- Memory-safe by design
 
-[0.1.0]: https://github.com/shellnoq/hafiz/releases/tag/v0.1.0
+### Deployment Options
+
+- Docker & Docker Compose
+- Kubernetes with Helm
+- Multi-server cluster
+- Air-gapped environments
+
+[1.0.0]: https://github.com/shellnoq/hafiz/releases/tag/v1.0.0
