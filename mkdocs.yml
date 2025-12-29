@@ -1,5 +1,5 @@
 site_name: Hafiz Documentation
-site_url: https://hafiz.e2esolutions.tech/docs/
+site_url: https://hafiz.e2esolutions.tech/
 site_description: Enterprise-grade S3-compatible object storage written in Rust
 site_author: Hafiz Team
 
