@@ -76,5 +76,5 @@ docker run -d \
 
 Access:
 
-- **S3 API:** http://localhost:9000
+- **S3 API:** https://hafiz.local:9000
 - **Admin UI:** http://localhost:9001

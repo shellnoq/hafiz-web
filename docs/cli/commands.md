@@ -133,7 +133,7 @@ hafiz presign s3://my-bucket/file.txt --expires 86400
 hafiz configure
 
 # Set value
-hafiz configure set endpoint http://localhost:9000
+hafiz configure set endpoint https://hafiz.local:9000
 
 # Get value
 hafiz configure get endpoint

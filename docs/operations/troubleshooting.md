@@ -25,7 +25,7 @@ echo $HAFIZ_ROOT_ACCESS_KEY
 echo $HAFIZ_ROOT_SECRET_KEY
 
 # Check signature
-aws --endpoint-url http://localhost:9000 s3 ls --debug
+aws --endpoint-url https://hafiz.local:9000 s3 ls --debug
 ```
 
 ### Database Connection

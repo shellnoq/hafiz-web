@@ -21,7 +21,7 @@ description: Hafiz - Enterprise-grade S3-compatible object storage written in Ru
 
 ---
 
-**Hafiz** (حافظ - "Guardian" in Arabic/Turkish) is a high-performance, S3-compatible object storage system. Built from the ground up in Rust for memory safety, performance, and reliability.
+**Hafiz** is a high-performance, S3-compatible object storage system. Built from the ground up in Rust for memory safety, performance, and reliability.
 
 ## Why Hafiz?
 
@@ -75,9 +75,9 @@ description: Hafiz - Enterprise-grade S3-compatible object storage written in Ru
 
     Access:
 
-    - **S3 API**: http://localhost:9000
-    - **Admin UI**: http://localhost:9000/admin
-    - **File Browser**: http://localhost:9000/browse
+    - **S3 API**: https://hafiz.local:9000
+    - **Admin UI**: https://hafiz.local:9000/admin
+    - **File Browser**: https://hafiz.local:9000/browse
 
 === "Docker Compose"
 

@@ -69,7 +69,7 @@ This guide covers everything you need to know about using Hafiz.
     import boto3
 
     s3 = boto3.client('s3',
-        endpoint_url='http://localhost:9000',
+        endpoint_url='https://hafiz.local:9000',
         aws_access_key_id='hafizadmin',
         aws_secret_access_key='hafizadmin'
     )
@@ -84,7 +84,7 @@ This guide covers everything you need to know about using Hafiz.
     import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
     const client = new S3Client({
-      endpoint: "http://localhost:9000",
+      endpoint: "https://hafiz.local:9000",
       forcePathStyle: true,
     });
 
@@ -98,6 +98,6 @@ This guide covers everything you need to know about using Hafiz.
 === "AWS CLI"
 
     ```bash
-    aws --endpoint-url http://localhost:9000 \
+    aws --endpoint-url https://hafiz.local:9000 \
         s3 cp file.txt s3://my-bucket/
     ```

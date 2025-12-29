@@ -35,7 +35,7 @@ Object Lock prevents objects from being deleted or overwritten for a specified p
 Object Lock must be enabled when creating the bucket:
 
 ```bash
-aws --endpoint-url http://localhost:9000 s3api create-bucket \
+aws --endpoint-url https://hafiz.local:9000 s3api create-bucket \
     --bucket compliance-bucket \
     --object-lock-enabled-for-bucket
 ```
@@ -43,7 +43,7 @@ aws --endpoint-url http://localhost:9000 s3api create-bucket \
 ## Set Default Retention
 
 ```bash
-aws --endpoint-url http://localhost:9000 s3api put-object-lock-configuration \
+aws --endpoint-url https://hafiz.local:9000 s3api put-object-lock-configuration \
     --bucket compliance-bucket \
     --object-lock-configuration '{
       "ObjectLockEnabled": "Enabled",
@@ -60,7 +60,7 @@ aws --endpoint-url http://localhost:9000 s3api put-object-lock-configuration \
 
 ```bash
 # Set retention when uploading
-aws --endpoint-url http://localhost:9000 s3api put-object \
+aws --endpoint-url https://hafiz.local:9000 s3api put-object \
     --bucket compliance-bucket \
     --key document.pdf \
     --body document.pdf \
@@ -68,7 +68,7 @@ aws --endpoint-url http://localhost:9000 s3api put-object \
     --object-lock-retain-until-date 2025-12-31T00:00:00Z
 
 # Update retention (can only extend)
-aws --endpoint-url http://localhost:9000 s3api put-object-retention \
+aws --endpoint-url https://hafiz.local:9000 s3api put-object-retention \
     --bucket compliance-bucket \
     --key document.pdf \
     --retention '{
@@ -83,13 +83,13 @@ Legal hold prevents deletion regardless of retention settings:
 
 ```bash
 # Enable legal hold
-aws --endpoint-url http://localhost:9000 s3api put-object-legal-hold \
+aws --endpoint-url https://hafiz.local:9000 s3api put-object-legal-hold \
     --bucket compliance-bucket \
     --key document.pdf \
     --legal-hold '{"Status": "ON"}'
 
 # Remove legal hold (requires permission)
-aws --endpoint-url http://localhost:9000 s3api put-object-legal-hold \
+aws --endpoint-url https://hafiz.local:9000 s3api put-object-legal-hold \
     --bucket compliance-bucket \
     --key document.pdf \
     --legal-hold '{"Status": "OFF"}'
@@ -99,12 +99,12 @@ aws --endpoint-url http://localhost:9000 s3api put-object-legal-hold \
 
 ```bash
 # Get retention
-aws --endpoint-url http://localhost:9000 s3api get-object-retention \
+aws --endpoint-url https://hafiz.local:9000 s3api get-object-retention \
     --bucket compliance-bucket \
     --key document.pdf
 
 # Get legal hold
-aws --endpoint-url http://localhost:9000 s3api get-object-legal-hold \
+aws --endpoint-url https://hafiz.local:9000 s3api get-object-legal-hold \
     --bucket compliance-bucket \
     --key document.pdf
 ```

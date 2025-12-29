@@ -12,7 +12,7 @@ Buckets are containers for storing objects. Every object in Hafiz must belong to
 === "AWS CLI"
 
     ```bash
-    aws --endpoint-url http://localhost:9000 s3 mb s3://my-bucket
+    aws --endpoint-url https://hafiz.local:9000 s3 mb s3://my-bucket
     ```
 
 === "Hafiz CLI"
@@ -31,7 +31,7 @@ Buckets are containers for storing objects. Every object in Hafiz must belong to
 
 ```bash
 # AWS CLI
-aws --endpoint-url http://localhost:9000 s3 ls
+aws --endpoint-url https://hafiz.local:9000 s3 ls
 
 # Hafiz CLI
 hafiz ls s3://
@@ -44,7 +44,7 @@ hafiz ls s3://
 
 ```bash
 # Delete empty bucket
-aws --endpoint-url http://localhost:9000 s3 rb s3://my-bucket
+aws --endpoint-url https://hafiz.local:9000 s3 rb s3://my-bucket
 
 # Force delete (delete all objects first)
 hafiz rb s3://my-bucket --force
@@ -70,7 +70,7 @@ hafiz rb s3://my-bucket --force
 Enable versioning to keep multiple versions of objects:
 
 ```bash
-aws --endpoint-url http://localhost:9000 s3api put-bucket-versioning \
+aws --endpoint-url https://hafiz.local:9000 s3api put-bucket-versioning \
     --bucket my-bucket \
     --versioning-configuration Status=Enabled
 ```
@@ -80,7 +80,7 @@ aws --endpoint-url http://localhost:9000 s3api put-bucket-versioning \
 Automatically expire or transition objects:
 
 ```bash
-aws --endpoint-url http://localhost:9000 s3api put-bucket-lifecycle-configuration \
+aws --endpoint-url https://hafiz.local:9000 s3api put-bucket-lifecycle-configuration \
     --bucket my-bucket \
     --lifecycle-configuration file://lifecycle.json
 ```
@@ -107,11 +107,11 @@ Control access with IAM-style policies:
 
 ```bash
 # Get bucket location
-aws --endpoint-url http://localhost:9000 s3api get-bucket-location \
+aws --endpoint-url https://hafiz.local:9000 s3api get-bucket-location \
     --bucket my-bucket
 
 # Get versioning status
-aws --endpoint-url http://localhost:9000 s3api get-bucket-versioning \
+aws --endpoint-url https://hafiz.local:9000 s3api get-bucket-versioning \
     --bucket my-bucket
 
 # Hafiz CLI - detailed info

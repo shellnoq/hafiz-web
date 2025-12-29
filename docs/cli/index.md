@@ -33,7 +33,7 @@ The `hafiz` CLI provides an AWS CLI-compatible interface for Hafiz.
 
 ```bash
 hafiz configure
-# Endpoint URL: http://localhost:9000
+# Endpoint URL: https://hafiz.local:9000
 # Access Key: hafizadmin
 # Secret Key: hafizadmin
 ```
@@ -41,7 +41,7 @@ hafiz configure
 Or use environment variables:
 
 ```bash
-export HAFIZ_ENDPOINT=http://localhost:9000
+export HAFIZ_ENDPOINT=https://hafiz.local:9000
 export HAFIZ_ACCESS_KEY=hafizadmin
 export HAFIZ_SECRET_KEY=hafizadmin
 ```

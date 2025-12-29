@@ -15,7 +15,7 @@ All requests must be signed using AWS Signature Version 4:
 
 ```bash
 # AWS CLI handles this automatically
-aws --endpoint-url http://localhost:9000 s3 ls
+aws --endpoint-url https://hafiz.local:9000 s3 ls
 
 # Or set credentials
 export AWS_ACCESS_KEY_ID=your-access-key
@@ -57,7 +57,7 @@ IAM-style policies for fine-grained access control.
 ### Apply Policy
 
 ```bash
-aws --endpoint-url http://localhost:9000 s3api put-bucket-policy \
+aws --endpoint-url https://hafiz.local:9000 s3api put-bucket-policy \
     --bucket my-bucket \
     --policy file://policy.json
 ```
@@ -206,18 +206,18 @@ Generate time-limited URLs for temporary access without sharing credentials.
 
 ```bash
 # Via Admin API
-curl -X GET "http://localhost:9000/api/v1/presigned/download/my-bucket/file.pdf?expires_in=3600" \
+curl -X GET "https://hafiz.local:9000/api/v1/presigned/download/my-bucket/file.pdf?expires_in=3600" \
     -H "Authorization: Bearer $TOKEN"
 
 # Via AWS CLI
-aws --endpoint-url http://localhost:9000 s3 presign s3://my-bucket/file.pdf --expires-in 3600
+aws --endpoint-url https://hafiz.local:9000 s3 presign s3://my-bucket/file.pdf --expires-in 3600
 ```
 
 ### Generate Presigned Upload URL
 
 ```bash
 # Via Admin API
-curl -X GET "http://localhost:9000/api/v1/presigned/upload/my-bucket/uploads/file.pdf?expires_in=3600" \
+curl -X GET "https://hafiz.local:9000/api/v1/presigned/upload/my-bucket/uploads/file.pdf?expires_in=3600" \
     -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -225,7 +225,7 @@ curl -X GET "http://localhost:9000/api/v1/presigned/upload/my-bucket/uploads/fil
 
 ```json
 {
-  "url": "http://localhost:9000/my-bucket/file.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&...",
+  "url": "https://hafiz.local:9000/my-bucket/file.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&...",
   "expires_at": "2024-01-15T12:00:00Z",
   "bucket": "my-bucket",
   "key": "file.pdf"

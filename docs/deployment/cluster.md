@@ -722,7 +722,7 @@ set -e
 
 EXPORT_DIR="/mnt/export/hafiz-$(date +%Y%m%d-%H%M%S)"
 POSTGRES_URL="postgresql://hafiz:password@localhost:5432/hafiz"
-S3_ENDPOINT="http://localhost:9000"
+S3_ENDPOINT="https://hafiz.local:9000"
 
 mkdir -p "$EXPORT_DIR"/{metadata,objects,checksums}
 
@@ -829,7 +829,7 @@ set -e
 
 IMPORT_FILE="$1"
 POSTGRES_URL="postgresql://hafiz:password@localhost:5432/hafiz"
-S3_ENDPOINT="http://localhost:9000"
+S3_ENDPOINT="https://hafiz.local:9000"
 
 if [ -z "$IMPORT_FILE" ]; then
     echo "Usage: $0 <hafiz-export.tar>"
@@ -942,7 +942,7 @@ psql "$POSTGRES_URL" -t -A -c "
 # Export changed objects
 while IFS='|' read -r bucket key; do
     mkdir -p "$EXPORT_DIR/objects/$bucket/$(dirname $key)"
-    aws --endpoint-url http://localhost:9000 s3 cp \
+    aws --endpoint-url https://hafiz.local:9000 s3 cp \
         "s3://$bucket/$key" \
         "$EXPORT_DIR/objects/$bucket/$key"
 done < "$EXPORT_DIR/metadata/changed_objects.txt"
