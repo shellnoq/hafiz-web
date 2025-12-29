@@ -4,30 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hafiz - Enterprise S3-Compatible Object Storage</title>
-    <meta name="description" content="High-performance S3-compatible object storage written in Rust. Single binary, air-gap ready, with built-in web console.">
-    
+    <meta name="description" content="High-performance S3-compatible object storage written in Rust. Enterprise-grade security, multi-cluster replication, and air-gapped sync capabilities.">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="docs/assets/favicon.svg">
+
     <style>
         :root {
             --bg-primary: #0a0a0f;
-            --bg-secondary: #12121a;
-            --bg-tertiary: #1a1a24;
-            --bg-card: #16161f;
+            --bg-secondary: #0f0f18;
+            --bg-tertiary: #161622;
+            --bg-card: rgba(22, 22, 34, 0.6);
             --text-primary: #f0f0f5;
-            --text-secondary: #a0a0b0;
-            --text-muted: #606070;
+            --text-secondary: #a0a0b8;
+            --text-muted: #606078;
             --accent-primary: #00d4aa;
             --accent-secondary: #00a8ff;
-            --accent-gradient: linear-gradient(135deg, #00d4aa 0%, #00a8ff 100%);
+            --accent-tertiary: #7c3aed;
+            --accent-gradient: linear-gradient(135deg, #00d4aa 0%, #00a8ff 50%, #7c3aed 100%);
             --accent-glow: rgba(0, 212, 170, 0.15);
-            --border-color: rgba(255, 255, 255, 0.08);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(255, 255, 255, 0.12);
             --rust-orange: #f74c00;
             --success: #00d4aa;
             --warning: #ffb800;
+            --danger: #ff4757;
         }
 
         * {
@@ -41,25 +47,71 @@
         }
 
         body {
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             line-height: 1.6;
             overflow-x: hidden;
         }
 
-        /* Noise Texture Overlay */
-        body::before {
-            content: '';
+        /* Animated Background */
+        .bg-grid {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-            opacity: 0.03;
+            background-image:
+                linear-gradient(rgba(0, 212, 170, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 170, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
             pointer-events: none;
-            z-index: 1000;
+            z-index: 0;
+        }
+
+        .bg-glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .bg-glow-1 {
+            top: -200px;
+            left: -200px;
+            background: radial-gradient(circle, rgba(0, 212, 170, 0.3) 0%, transparent 70%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .bg-glow-2 {
+            bottom: -200px;
+            right: -200px;
+            background: radial-gradient(circle, rgba(0, 168, 255, 0.25) 0%, transparent 70%);
+            animation: float 25s ease-in-out infinite reverse;
+        }
+
+        .bg-glow-3 {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, transparent 70%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(50px, 50px); }
+            50% { transform: translate(0, 100px); }
+            75% { transform: translate(-50px, 50px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.15; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.25; transform: translate(-50%, -50%) scale(1.1); }
         }
 
         code, .mono {
@@ -80,6 +132,8 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 24px;
+            position: relative;
+            z-index: 1;
         }
 
         /* Navigation */
@@ -93,6 +147,12 @@
             background: rgba(10, 10, 15, 0.8);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        nav.scrolled {
+            padding: 12px 0;
+            background: rgba(10, 10, 15, 0.95);
         }
 
         nav .container {
@@ -110,67 +170,80 @@
             color: var(--text-primary);
         }
 
-        .logo-icon {
-            width: 40px;
-            height: 40px;
+        .logo svg {
+            width: 36px;
+            height: 36px;
+        }
+
+        .logo-text {
             background: var(--accent-gradient);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .nav-links {
             display: flex;
-            gap: 32px;
             align-items: center;
+            gap: 32px;
         }
 
         .nav-links a {
             color: var(--text-secondary);
             font-weight: 500;
             font-size: 0.95rem;
-            transition: color 0.2s;
+            transition: color 0.2s ease;
         }
 
         .nav-links a:hover {
             color: var(--text-primary);
         }
 
-        .btn {
+        .nav-links .btn-primary {
+            color: var(--bg-primary);
+        }
+
+        .btn-primary {
             display: inline-flex;
             align-items: center;
             gap: 8px;
             padding: 12px 24px;
-            border-radius: 8px;
+            background: var(--accent-gradient);
+            color: var(--bg-primary);
             font-weight: 600;
             font-size: 0.95rem;
+            border-radius: 8px;
+            border: none;
             cursor: pointer;
             transition: all 0.3s ease;
-            border: none;
-        }
-
-        .btn-primary {
-            background: var(--accent-gradient);
-            color: #000;
+            text-decoration: none;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 30px var(--accent-glow);
-            color: #000;
+            box-shadow: 0 10px 40px rgba(0, 212, 170, 0.3);
+            color: var(--bg-primary);
         }
 
         .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
             background: transparent;
-            border: 1px solid var(--border-color);
             color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
         }
 
         .btn-secondary:hover {
-            background: var(--bg-tertiary);
             border-color: var(--accent-primary);
+            background: rgba(0, 212, 170, 0.1);
             color: var(--text-primary);
         }
 
@@ -179,71 +252,68 @@
             min-height: 100vh;
             display: flex;
             align-items: center;
+            padding: 120px 0 80px;
             position: relative;
-            padding-top: 80px;
-            overflow: hidden;
-        }
-
-        .hero-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 212, 170, 0.15), transparent),
-                radial-gradient(ellipse 60% 40% at 80% 60%, rgba(0, 168, 255, 0.1), transparent);
-            pointer-events: none;
-        }
-
-        .hero-grid {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: 
-                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-            background-size: 60px 60px;
-            mask-image: radial-gradient(ellipse 70% 70% at 50% 30%, black, transparent);
         }
 
         .hero-content {
-            position: relative;
-            z-index: 2;
-            text-align: center;
-            max-width: 900px;
-            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
         }
 
-        .hero-badge {
+        .hero-text {
+            animation: fadeInUp 0.8s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
             padding: 8px 16px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
+            background: rgba(0, 212, 170, 0.1);
+            border: 1px solid rgba(0, 212, 170, 0.2);
             border-radius: 100px;
             font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-bottom: 32px;
-            animation: fadeInUp 0.6s ease;
+            font-weight: 500;
+            color: var(--accent-primary);
+            margin-bottom: 24px;
         }
 
-        .hero-badge .rust-icon {
-            color: var(--rust-orange);
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
         }
 
         .hero h1 {
-            font-size: clamp(3rem, 8vw, 5rem);
+            font-size: 4rem;
             font-weight: 800;
             line-height: 1.1;
             margin-bottom: 24px;
-            animation: fadeInUp 0.6s ease 0.1s both;
+            letter-spacing: -0.02em;
         }
 
-        .hero h1 .gradient-text {
+        .hero h1 span {
             background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -253,44 +323,223 @@
         .hero-description {
             font-size: 1.25rem;
             color: var(--text-secondary);
-            max-width: 650px;
-            margin: 0 auto 40px;
-            animation: fadeInUp 0.6s ease 0.2s both;
+            margin-bottom: 40px;
+            max-width: 520px;
         }
 
         .hero-buttons {
             display: flex;
             gap: 16px;
-            justify-content: center;
-            flex-wrap: wrap;
-            animation: fadeInUp 0.6s ease 0.3s both;
+            margin-bottom: 48px;
         }
 
         .hero-stats {
             display: flex;
-            justify-content: center;
             gap: 48px;
-            margin-top: 80px;
-            animation: fadeInUp 0.6s ease 0.4s both;
         }
 
         .stat {
-            text-align: center;
+            text-align: left;
         }
 
         .stat-value {
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 700;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
         }
 
         .stat-label {
             font-size: 0.9rem;
             color: var(--text-muted);
+        }
+
+        /* Cluster Visualization */
+        .hero-visual {
+            position: relative;
+            height: 500px;
+            animation: fadeInUp 0.8s ease 0.2s backwards;
+        }
+
+        .cluster-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 400px;
+        }
+
+        .cluster-node {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .cluster-node:hover {
+            border-color: var(--accent-primary);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 212, 170, 0.2);
+        }
+
+        .cluster-node.active {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px rgba(0, 212, 170, 0.3);
+        }
+
+        .cluster-node svg {
+            width: 28px;
+            height: 28px;
+            margin-bottom: 4px;
+            color: var(--accent-primary);
+        }
+
+        .cluster-node span {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .node-1 { top: 0; left: 50%; transform: translateX(-50%); }
+        .node-2 { top: 35%; right: 0; }
+        .node-3 { bottom: 0; right: 15%; }
+        .node-4 { bottom: 0; left: 15%; }
+        .node-5 { top: 35%; left: 0; }
+
+        .cluster-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            background: var(--accent-gradient);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 60px rgba(0, 212, 170, 0.4);
+            animation: centerPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes centerPulse {
+            0%, 100% { box-shadow: 0 0 60px rgba(0, 212, 170, 0.4); }
+            50% { box-shadow: 0 0 80px rgba(0, 212, 170, 0.6); }
+        }
+
+        .cluster-center svg {
+            width: 40px;
+            height: 40px;
+            color: var(--bg-primary);
+        }
+
+        .cluster-center span {
+            font-size: 0.75rem;
+            color: var(--bg-primary);
+            font-weight: 600;
             margin-top: 4px;
+        }
+
+        /* Data packets animation */
+        .data-packet {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--accent-primary);
+            opacity: 0;
+            z-index: 10;
+        }
+
+        .packet-1 { animation: packet1 3s ease-in-out infinite; }
+        .packet-2 { animation: packet2 3s ease-in-out infinite 0.5s; }
+        .packet-3 { animation: packet3 3s ease-in-out infinite 1s; }
+        .packet-4 { animation: packet4 3s ease-in-out infinite 1.5s; }
+        .packet-5 { animation: packet5 3s ease-in-out infinite 2s; }
+
+        @keyframes packet1 {
+            0% { top: 80px; left: 200px; opacity: 0; transform: scale(0.5); }
+            10% { opacity: 1; transform: scale(1); }
+            50% { top: 200px; left: 200px; opacity: 1; }
+            60% { opacity: 0; transform: scale(0.5); }
+            100% { top: 200px; left: 200px; opacity: 0; }
+        }
+
+        @keyframes packet2 {
+            0% { top: 175px; left: 320px; opacity: 0; transform: scale(0.5); }
+            10% { opacity: 1; transform: scale(1); }
+            50% { top: 200px; left: 200px; opacity: 1; }
+            60% { opacity: 0; transform: scale(0.5); }
+            100% { top: 200px; left: 200px; opacity: 0; }
+        }
+
+        @keyframes packet3 {
+            0% { top: 320px; left: 280px; opacity: 0; transform: scale(0.5); }
+            10% { opacity: 1; transform: scale(1); }
+            50% { top: 200px; left: 200px; opacity: 1; }
+            60% { opacity: 0; transform: scale(0.5); }
+            100% { top: 200px; left: 200px; opacity: 0; }
+        }
+
+        @keyframes packet4 {
+            0% { top: 320px; left: 100px; opacity: 0; transform: scale(0.5); }
+            10% { opacity: 1; transform: scale(1); }
+            50% { top: 200px; left: 200px; opacity: 1; }
+            60% { opacity: 0; transform: scale(0.5); }
+            100% { top: 200px; left: 200px; opacity: 0; }
+        }
+
+        @keyframes packet5 {
+            0% { top: 175px; left: 80px; opacity: 0; transform: scale(0.5); }
+            10% { opacity: 1; transform: scale(1); }
+            50% { top: 200px; left: 200px; opacity: 1; }
+            60% { opacity: 0; transform: scale(0.5); }
+            100% { top: 200px; left: 200px; opacity: 0; }
+        }
+
+        /* Connection lines */
+        .cluster-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .cluster-lines svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .connection-line {
+            stroke: var(--border-color);
+            stroke-width: 1;
+            fill: none;
+        }
+
+        .connection-line-active {
+            stroke: url(#lineGradient);
+            stroke-width: 2;
+            fill: none;
+            stroke-dasharray: 8 4;
+            animation: dashMove 1s linear infinite;
+        }
+
+        @keyframes dashMove {
+            to { stroke-dashoffset: -12; }
         }
 
         /* Features Section */
@@ -305,23 +554,23 @@
         }
 
         .section-label {
-            display: inline-block;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: var(--accent-primary);
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 0.1em;
             margin-bottom: 16px;
         }
 
         .section-title {
-            font-size: clamp(2rem, 5vw, 3rem);
+            font-size: 3rem;
             font-weight: 700;
             margin-bottom: 16px;
+            letter-spacing: -0.02em;
         }
 
         .section-description {
-            font-size: 1.1rem;
+            font-size: 1.125rem;
             color: var(--text-secondary);
             max-width: 600px;
             margin: 0 auto;
@@ -329,7 +578,7 @@
 
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 24px;
         }
 
@@ -338,6 +587,7 @@
             border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 32px;
+            backdrop-filter: blur(10px);
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -352,11 +602,11 @@
             height: 2px;
             background: var(--accent-gradient);
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.3s ease;
         }
 
         .feature-card:hover {
-            border-color: rgba(0, 212, 170, 0.3);
+            border-color: var(--border-hover);
             transform: translateY(-4px);
         }
 
@@ -367,13 +617,18 @@
         .feature-icon {
             width: 48px;
             height: 48px;
-            background: var(--accent-glow);
+            background: rgba(0, 212, 170, 0.1);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
             margin-bottom: 20px;
+        }
+
+        .feature-icon svg {
+            width: 24px;
+            height: 24px;
+            color: var(--accent-primary);
         }
 
         .feature-card h3 {
@@ -385,380 +640,308 @@
         .feature-card p {
             color: var(--text-secondary);
             font-size: 0.95rem;
+            line-height: 1.7;
         }
-
-        /* S3 Compatibility Section */
-        .s3-compat {
-            padding: 120px 0;
-            background: var(--bg-secondary);
-        }
-
-        .s3-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 64px;
-            align-items: center;
-        }
-
-        .s3-content h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 24px;
-        }
-
-        .s3-content p {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            margin-bottom: 32px;
-        }
-
-        .endpoint-list {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .endpoint-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-
-        .endpoint-item .check {
-            color: var(--success);
-        }
-
-        .s3-visual {
-            position: relative;
-        }
-
-        .api-card {
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .api-card-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 16px;
-            background: var(--bg-tertiary);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .api-card-header .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .api-card-header .dot.red { background: #ff5f57; }
-        .api-card-header .dot.yellow { background: #febc2e; }
-        .api-card-header .dot.green { background: #28c840; }
-
-        .api-card-body {
-            padding: 20px;
-        }
-
-        .api-card-body pre {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            line-height: 1.8;
-            color: var(--text-secondary);
-            overflow-x: auto;
-        }
-
-        .api-card-body .keyword { color: var(--accent-secondary); }
-        .api-card-body .string { color: var(--accent-primary); }
-        .api-card-body .comment { color: var(--text-muted); }
 
         /* Architecture Section */
         .architecture {
             padding: 120px 0;
-        }
-
-        .arch-diagram {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 48px;
-            margin-top: 48px;
-        }
-
-        .arch-layers {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        .arch-layer {
-            display: flex;
-            align-items: center;
-            gap: 24px;
-        }
-
-        .arch-label {
-            width: 140px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .arch-boxes {
-            flex: 1;
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .arch-box {
-            padding: 16px 24px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            flex: 1;
-            min-width: 120px;
-            text-align: center;
-            transition: all 0.3s;
-        }
-
-        .arch-box:hover {
-            border-color: var(--accent-primary);
-            background: var(--accent-glow);
-        }
-
-        .arch-box.highlight {
-            background: var(--accent-glow);
-            border-color: var(--accent-primary);
-        }
-
-        .arch-connector {
-            display: flex;
-            justify-content: center;
-            padding: 8px 0;
-            color: var(--text-muted);
-        }
-
-        /* Comparison Section */
-        .comparison {
-            padding: 120px 0;
             background: var(--bg-secondary);
-        }
-
-        .comparison-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 48px;
-        }
-
-        .comparison-table th,
-        .comparison-table td {
-            padding: 20px 24px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .comparison-table th {
-            font-weight: 600;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .comparison-table th:first-child {
-            width: 35%;
-        }
-
-        .comparison-table td {
-            font-size: 0.95rem;
-        }
-
-        .comparison-table tr:hover td {
-            background: rgba(255,255,255,0.02);
-        }
-
-        .comparison-table .product-header {
-            font-weight: 600;
-            font-size: 1rem;
-        }
-
-        .comparison-table .hafiz-col {
-            background: var(--accent-glow);
-        }
-
-        .comparison-table .check {
-            color: var(--success);
-            font-size: 1.2rem;
-        }
-
-        .comparison-table .cross {
-            color: var(--text-muted);
-        }
-
-        /* Quick Start Section */
-        .quickstart {
-            padding: 120px 0;
-        }
-
-        .quickstart-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 48px;
-            margin-top: 48px;
-        }
-
-        .quickstart-step {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 32px;
-        }
-
-        .step-number {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            background: var(--accent-gradient);
-            color: #000;
-            font-weight: 700;
-            font-size: 0.9rem;
-            border-radius: 8px;
-            margin-bottom: 16px;
-        }
-
-        .quickstart-step h3 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
-
-        .code-block {
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 16px;
-            overflow-x: auto;
-        }
-
-        .code-block code {
-            font-size: 0.85rem;
-            color: var(--accent-primary);
-        }
-
-        /* Enterprise CTA */
-        .enterprise-cta {
-            padding: 120px 0;
-            background: var(--bg-secondary);
-            text-align: center;
-        }
-
-        .cta-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 64px;
             position: relative;
-            overflow: hidden;
         }
 
-        .cta-card::before {
+        .architecture::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            bottom: 0;
-            background: radial-gradient(ellipse at center, var(--accent-glow), transparent 70%);
-            pointer-events: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-color), transparent);
         }
 
-        .cta-card h2 {
+        .arch-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .arch-visual {
+            position: relative;
+            height: 400px;
+        }
+
+        .arch-diagram {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .arch-layer {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 24px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .arch-layer:hover {
+            border-color: var(--accent-primary);
+            transform: translateX(8px);
+        }
+
+        .arch-layer-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 212, 170, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .arch-layer-icon svg {
+            width: 20px;
+            height: 20px;
+            color: var(--accent-primary);
+        }
+
+        .arch-layer-content h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .arch-layer-content p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .arch-text h2 {
             font-size: 2.5rem;
             font-weight: 700;
-            margin-bottom: 16px;
-            position: relative;
+            margin-bottom: 24px;
+            letter-spacing: -0.02em;
         }
 
-        .cta-card p {
+        .arch-text > p {
             color: var(--text-secondary);
             font-size: 1.1rem;
-            max-width: 600px;
-            margin: 0 auto 32px;
-            position: relative;
+            margin-bottom: 32px;
         }
 
-        .cta-features {
+        .arch-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .arch-feature {
             display: flex;
-            justify-content: center;
-            gap: 32px;
-            flex-wrap: wrap;
-            margin-bottom: 40px;
-            position: relative;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
         }
 
-        .cta-feature {
+        .arch-feature svg {
+            width: 20px;
+            height: 20px;
+            color: var(--accent-primary);
+            flex-shrink: 0;
+        }
+
+        /* Code Section */
+        .code-section {
+            padding: 120px 0;
+        }
+
+        .code-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .code-text h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            letter-spacing: -0.02em;
+        }
+
+        .code-text > p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 32px;
+        }
+
+        .code-block {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .code-header {
             display: flex;
             align-items: center;
             gap: 8px;
+            padding: 16px 20px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .code-dot-red { background: #ff5f57; }
+        .code-dot-yellow { background: #febc2e; }
+        .code-dot-green { background: #28c840; }
+
+        .code-title {
+            margin-left: 12px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .code-content-inner {
+            padding: 24px;
+            overflow-x: auto;
+        }
+
+        .code-content-inner pre {
+            margin: 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.7;
             color: var(--text-secondary);
         }
 
-        .cta-feature .check {
-            color: var(--success);
+        .code-content-inner .comment { color: #546e7a; }
+        .code-content-inner .string { color: #c3e88d; }
+        .code-content-inner .variable { color: #f78c6c; }
+
+        /* CTA Section */
+        .cta {
+            padding: 120px 0;
+            position: relative;
+        }
+
+        .cta-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .cta-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent-gradient);
+        }
+
+        .cta-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(0, 212, 170, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .cta h2 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+            position: relative;
+        }
+
+        .cta p {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            position: relative;
         }
 
         /* Footer */
         footer {
-            padding: 64px 0 32px;
+            padding: 60px 0 40px;
             border-top: 1px solid var(--border-color);
         }
 
-        .footer-grid {
+        .footer-content {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 48px;
-            margin-bottom: 48px;
+            gap: 60px;
+            margin-bottom: 60px;
         }
 
         .footer-brand p {
             color: var(--text-secondary);
             font-size: 0.95rem;
             margin-top: 16px;
-            max-width: 300px;
+            max-width: 280px;
         }
 
-        .footer-column h4 {
+        .footer-section h4 {
             font-size: 0.9rem;
             font-weight: 600;
-            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
             margin-bottom: 20px;
+            color: var(--text-primary);
         }
 
-        .footer-column ul {
+        .footer-section ul {
             list-style: none;
         }
 
-        .footer-column li {
+        .footer-section li {
             margin-bottom: 12px;
         }
 
-        .footer-column a {
+        .footer-section a {
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
         }
 
-        .footer-column a:hover {
+        .footer-section a:hover {
             color: var(--accent-primary);
         }
 
@@ -766,10 +949,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-top: 32px;
+            padding-top: 40px;
             border-top: 1px solid var(--border-color);
-            font-size: 0.85rem;
+        }
+
+        .footer-bottom p {
             color: var(--text-muted);
+            font-size: 0.9rem;
         }
 
         .footer-social {
@@ -778,146 +964,305 @@
         }
 
         .footer-social a {
-            color: var(--text-muted);
-            font-size: 1.2rem;
+            width: 40px;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
         }
 
         .footer-social a:hover {
+            border-color: var(--accent-primary);
             color: var(--accent-primary);
         }
 
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .footer-social svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        /* Scroll Animations */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .animate-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         /* Responsive */
-        @media (max-width: 968px) {
-            .s3-grid,
-            .quickstart-grid {
+        @media (max-width: 1024px) {
+            .hero-content {
                 grid-template-columns: 1fr;
+                text-align: center;
             }
 
-            .footer-grid {
-                grid-template-columns: 1fr 1fr;
+            .hero h1 {
+                font-size: 3rem;
+            }
+
+            .hero-description {
+                margin: 0 auto 40px;
+            }
+
+            .hero-buttons {
+                justify-content: center;
             }
 
             .hero-stats {
-                gap: 24px;
+                justify-content: center;
             }
 
-            .nav-links {
+            .hero-visual {
                 display: none;
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .arch-content,
+            .code-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 40px;
             }
         }
 
-        @media (max-width: 640px) {
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero {
+                padding: 100px 0 60px;
+            }
+
+            .hero h1 {
+                font-size: 2.25rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
             .features-grid {
                 grid-template-columns: 1fr;
             }
 
-            .footer-grid {
+            .arch-text h2,
+            .code-text h2 {
+                font-size: 2rem;
+            }
+
+            .cta-box {
+                padding: 48px 24px;
+            }
+
+            .cta h2 {
+                font-size: 2rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+
+            .footer-content {
                 grid-template-columns: 1fr;
             }
 
-            .comparison-table {
-                display: block;
-                overflow-x: auto;
-            }
-
-            .hero-stats {
+            .footer-bottom {
                 flex-direction: column;
-                gap: 32px;
-            }
-
-            .cta-card {
-                padding: 40px 24px;
-            }
-
-            .arch-layer {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .arch-label {
-                width: auto;
+                gap: 24px;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Background -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="bg-glow bg-glow-3"></div>
+
     <!-- Navigation -->
-    <nav>
+    <nav id="navbar">
         <div class="container">
-            <a href="#" class="logo">
-                <div class="logo-icon">📦</div>
-                Hafiz
+            <a href="/" class="logo">
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="40" height="40" rx="8" fill="url(#logoGrad)"/>
+                    <path d="M12 14H18V26H12V14Z" fill="#0a0a0f"/>
+                    <path d="M22 14H28V20H22V14Z" fill="#0a0a0f"/>
+                    <path d="M22 22H28V26H22V22Z" fill="#0a0a0f"/>
+                    <path d="M18 18H22V22H18V18Z" fill="#0a0a0f"/>
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0" y1="0" x2="40" y2="40">
+                            <stop offset="0%" stop-color="#00d4aa"/>
+                            <stop offset="100%" stop-color="#00a8ff"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span class="logo-text">Hafiz</span>
             </a>
             <div class="nav-links">
                 <a href="#features">Features</a>
-                <a href="#compatibility">S3 API</a>
                 <a href="#architecture">Architecture</a>
-                <a href="https://github.com/shellnoq/hafiz" target="_blank">Docs</a>
-                <a href="#quickstart" class="btn btn-primary">Get Started</a>
+                <a href="docs/">Documentation</a>
+                <a href="https://github.com/shellnoq/hafiz" target="_blank">GitHub</a>
+                <a href="docs/getting-started/quickstart/" class="btn-primary">Get Started</a>
             </div>
+            <button class="mobile-menu-btn" aria-label="Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12h18M3 6h18M3 18h18"/>
+                </svg>
+            </button>
         </div>
     </nav>
 
     <!-- Hero Section -->
     <section class="hero">
-        <div class="hero-bg"></div>
-        <div class="hero-grid"></div>
         <div class="container">
             <div class="hero-content">
-                <div class="hero-badge">
-                    <span class="rust-icon">🦀</span>
-                    Built with Rust for maximum performance
+                <div class="hero-text">
+                    <div class="badge">
+                        <span class="badge-dot"></span>
+                        Open Source & Enterprise Ready
+                    </div>
+                    <h1>The Guardian of<br>Your <span>Object Storage</span></h1>
+                    <p class="hero-description">
+                        Enterprise-grade S3-compatible object storage written in Rust.
+                        Built for performance, security, and multi-cluster replication.
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="docs/getting-started/quickstart/" class="btn-primary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                            Quick Start
+                        </a>
+                        <a href="https://github.com/shellnoq/hafiz" class="btn-secondary" target="_blank">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                            </svg>
+                            View on GitHub
+                        </a>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat">
+                            <div class="stat-value">33K+</div>
+                            <div class="stat-label">Lines of Rust</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">76+</div>
+                            <div class="stat-label">S3 API Endpoints</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">9</div>
+                            <div class="stat-label">Rust Crates</div>
+                        </div>
+                    </div>
                 </div>
-                <h1>
-                    Enterprise Object Storage,<br>
-                    <span class="gradient-text">Simplified.</span>
-                </h1>
-                <p class="hero-description">
-                    S3-compatible object storage that deploys anywhere. Single binary, 
-                    air-gap ready, with a built-in web console. No dependencies, no complexity.
-                </p>
-                <div class="hero-buttons">
-                    <a href="#quickstart" class="btn btn-primary">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                <div class="hero-visual">
+                    <div class="cluster-container">
+                        <!-- Connection Lines -->
+                        <svg class="cluster-lines" viewBox="0 0 400 400">
+                            <defs>
+                                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#00d4aa" stop-opacity="0.5"/>
+                                    <stop offset="50%" stop-color="#00a8ff" stop-opacity="0.8"/>
+                                    <stop offset="100%" stop-color="#00d4aa" stop-opacity="0.5"/>
+                                </linearGradient>
+                            </defs>
+                            <line class="connection-line" x1="200" y1="80" x2="200" y2="150"/>
+                            <line class="connection-line" x1="320" y1="175" x2="250" y2="175"/>
+                            <line class="connection-line" x1="280" y1="320" x2="230" y2="250"/>
+                            <line class="connection-line" x1="120" y1="320" x2="170" y2="250"/>
+                            <line class="connection-line" x1="80" y1="175" x2="150" y2="175"/>
+                            <line class="connection-line-active" x1="200" y1="80" x2="200" y2="150"/>
+                            <line class="connection-line-active" x1="320" y1="175" x2="250" y2="175"/>
+                            <line class="connection-line-active" x1="280" y1="320" x2="230" y2="250"/>
+                            <line class="connection-line-active" x1="120" y1="320" x2="170" y2="250"/>
+                            <line class="connection-line-active" x1="80" y1="175" x2="150" y2="175"/>
                         </svg>
-                        Quick Start
-                    </a>
-                    <a href="https://github.com/shellnoq/hafiz" class="btn btn-secondary" target="_blank">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                        </svg>
-                        View on GitHub
-                    </a>
-                </div>
-                <div class="hero-stats">
-                    <div class="stat">
-                        <div class="stat-value">27</div>
-                        <div class="stat-label">S3 Endpoints</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value">20K+</div>
-                        <div class="stat-label">Lines of Rust</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value">~15MB</div>
-                        <div class="stat-label">Binary Size</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value">0</div>
-                        <div class="stat-label">Dependencies*</div>
+
+                        <!-- Data Packets -->
+                        <div class="data-packet packet-1"></div>
+                        <div class="data-packet packet-2"></div>
+                        <div class="data-packet packet-3"></div>
+                        <div class="data-packet packet-4"></div>
+                        <div class="data-packet packet-5"></div>
+
+                        <!-- Nodes -->
+                        <div class="cluster-node node-1" data-node="1">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                                <path d="M8 21h8M12 17v4"/>
+                            </svg>
+                            <span>Node 1</span>
+                        </div>
+                        <div class="cluster-node node-2" data-node="2">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                                <path d="M8 21h8M12 17v4"/>
+                            </svg>
+                            <span>Node 2</span>
+                        </div>
+                        <div class="cluster-node node-3" data-node="3">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                                <path d="M8 21h8M12 17v4"/>
+                            </svg>
+                            <span>Node 3</span>
+                        </div>
+                        <div class="cluster-node node-4" data-node="4">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                                <path d="M8 21h8M12 17v4"/>
+                            </svg>
+                            <span>Node 4</span>
+                        </div>
+                        <div class="cluster-node node-5" data-node="5">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                                <path d="M8 21h8M12 17v4"/>
+                            </svg>
+                            <span>Node 5</span>
+                        </div>
+
+                        <!-- Center Hub -->
+                        <div class="cluster-center">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                                <path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/>
+                            </svg>
+                            <span>Hafiz</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -927,122 +1272,70 @@
     <!-- Features Section -->
     <section class="features" id="features">
         <div class="container">
-            <div class="section-header">
-                <span class="section-label">Features</span>
-                <h2 class="section-title">Everything you need for enterprise storage</h2>
+            <div class="section-header animate-on-scroll">
+                <div class="section-label">Features</div>
+                <h2 class="section-title">Built for Enterprise</h2>
                 <p class="section-description">
-                    Production-ready features designed for mission-critical deployments
+                    Everything you need for modern object storage, with the security
+                    and reliability your organization demands.
                 </p>
             </div>
             <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🔐</div>
-                    <h3>Server-Side Encryption</h3>
-                    <p>AES-256-GCM encryption at rest with automatic key management. Your data is secure by default.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🌐</div>
-                    <h3>S3-Compatible API</h3>
-                    <p>27 fully implemented S3 endpoints. Drop-in replacement for AWS S3 with existing tools and SDKs.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🖥️</div>
-                    <h3>Built-in Web Console</h3>
-                    <p>Leptos-based WASM UI with no Node.js dependency. Manage buckets, upload files, and monitor storage.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔄</div>
-                    <h3>Object Versioning</h3>
-                    <p>Full versioning support with delete markers. Track changes and recover previous versions instantly.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">⏰</div>
-                    <h3>Lifecycle Policies</h3>
-                    <p>Automated data management with expiration rules, transitions, and noncurrent version cleanup.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">📊</div>
-                    <h3>Prometheus Metrics</h3>
-                    <p>Production-ready observability with request latencies, storage metrics, and health endpoints.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔒</div>
-                    <h3>TLS & mTLS</h3>
-                    <p>Full TLS 1.2/1.3 support with mutual TLS for client certificate authentication. HSTS enabled.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🏢</div>
-                    <h3>Air-Gap Ready</h3>
-                    <p>Single binary with zero internet dependencies. Perfect for isolated, high-security environments.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🐘</div>
-                    <h3>PostgreSQL Backend</h3>
-                    <p>Production-grade metadata storage with connection pooling. SQLite for development.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- S3 Compatibility Section -->
-    <section class="s3-compat" id="compatibility">
-        <div class="container">
-            <div class="s3-grid">
-                <div class="s3-content">
-                    <span class="section-label">S3 Compatibility</span>
-                    <h2>Full AWS S3 API Support</h2>
-                    <p>
-                        Hafiz implements the complete S3 API specification. Use your existing 
-                        AWS SDKs, CLI tools, and applications without any code changes.
-                    </p>
-                    <div class="endpoint-list">
-                        <div class="endpoint-item"><span class="check">✓</span> CreateBucket</div>
-                        <div class="endpoint-item"><span class="check">✓</span> DeleteBucket</div>
-                        <div class="endpoint-item"><span class="check">✓</span> ListBuckets</div>
-                        <div class="endpoint-item"><span class="check">✓</span> HeadBucket</div>
-                        <div class="endpoint-item"><span class="check">✓</span> PutObject</div>
-                        <div class="endpoint-item"><span class="check">✓</span> GetObject</div>
-                        <div class="endpoint-item"><span class="check">✓</span> DeleteObject</div>
-                        <div class="endpoint-item"><span class="check">✓</span> HeadObject</div>
-                        <div class="endpoint-item"><span class="check">✓</span> ListObjectsV2</div>
-                        <div class="endpoint-item"><span class="check">✓</span> CopyObject</div>
-                        <div class="endpoint-item"><span class="check">✓</span> Multipart Upload</div>
-                        <div class="endpoint-item"><span class="check">✓</span> Object Tagging</div>
-                        <div class="endpoint-item"><span class="check">✓</span> Versioning</div>
-                        <div class="endpoint-item"><span class="check">✓</span> Lifecycle</div>
-                        <div class="endpoint-item"><span class="check">✓</span> Pre-signed URLs</div>
-                        <div class="endpoint-item"><span class="check">✓</span> Range Requests</div>
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                        </svg>
                     </div>
+                    <h3>High Performance</h3>
+                    <p>Built in Rust with async I/O for maximum throughput. Handle millions of objects with minimal latency.</p>
                 </div>
-                <div class="s3-visual">
-                    <div class="api-card">
-                        <div class="api-card-header">
-                            <span class="dot red"></span>
-                            <span class="dot yellow"></span>
-                            <span class="dot green"></span>
-                            <span style="margin-left: 12px; font-size: 0.85rem; color: var(--text-muted);">aws-cli</span>
-                        </div>
-                        <div class="api-card-body">
-<pre><span class="comment"># Configure Hafiz endpoint</span>
-<span class="keyword">aws configure</span> set default.s3.endpoint_url \
-    <span class="string">http://localhost:9000</span>
-
-<span class="comment"># Create a bucket</span>
-<span class="keyword">aws s3 mb</span> <span class="string">s3://my-bucket</span>
-
-<span class="comment"># Upload a file</span>
-<span class="keyword">aws s3 cp</span> ./data.json <span class="string">s3://my-bucket/</span>
-
-<span class="comment"># List objects</span>
-<span class="keyword">aws s3 ls</span> <span class="string">s3://my-bucket/</span>
-2024-01-15 10:30:00   1024 data.json
-
-<span class="comment"># Enable versioning</span>
-<span class="keyword">aws s3api put-bucket-versioning</span> \
-    --bucket my-bucket \
-    --versioning-configuration <span class="string">Status=Enabled</span></pre>
-                        </div>
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2"/>
+                            <path d="M7 11V7a5 5 0 0110 0v4"/>
+                        </svg>
                     </div>
+                    <h3>Enterprise Security</h3>
+                    <p>AES-256-GCM encryption, Object Lock (WORM), LDAP integration, and comprehensive audit logging.</p>
+                </div>
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                        </svg>
+                    </div>
+                    <h3>S3 Compatible</h3>
+                    <p>76+ S3 API endpoints. Works seamlessly with AWS CLI, SDKs, and existing S3 tools.</p>
+                </div>
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                        </svg>
+                    </div>
+                    <h3>Multi-Cluster Sync</h3>
+                    <p>Real-time replication across data centers. Cross-network and air-gapped deployment support.</p>
+                </div>
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <h3>Versioning & Lifecycle</h3>
+                    <p>Object versioning with delete markers, lifecycle policies, and automatic expiration rules.</p>
+                </div>
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                    </div>
+                    <h3>Observability</h3>
+                    <p>Prometheus metrics, Grafana dashboards, health endpoints, and comprehensive request tracing.</p>
                 </div>
             </div>
         </div>
@@ -1051,47 +1344,111 @@
     <!-- Architecture Section -->
     <section class="architecture" id="architecture">
         <div class="container">
-            <div class="section-header">
-                <span class="section-label">Architecture</span>
-                <h2 class="section-title">Modular Crate Design</h2>
-                <p class="section-description">
-                    Clean separation of concerns with independent, testable components
-                </p>
-            </div>
-            <div class="arch-diagram">
-                <div class="arch-layers">
-                    <div class="arch-layer">
-                        <div class="arch-label">Interface</div>
-                        <div class="arch-boxes">
-                            <div class="arch-box highlight">hafiz-s3-api</div>
-                            <div class="arch-box highlight">hafiz-admin</div>
-                            <div class="arch-box">hafiz-cli</div>
+            <div class="arch-content">
+                <div class="arch-visual animate-on-scroll">
+                    <div class="arch-diagram">
+                        <div class="arch-layer">
+                            <div class="arch-layer-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"/>
+                                </svg>
+                            </div>
+                            <div class="arch-layer-content">
+                                <h4>hafiz-s3-api</h4>
+                                <p>Axum-based HTTP layer with 76+ endpoints</p>
+                            </div>
+                        </div>
+                        <div class="arch-layer">
+                            <div class="arch-layer-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                                    <path d="M7 11V7a5 5 0 0110 0v4"/>
+                                </svg>
+                            </div>
+                            <div class="arch-layer-content">
+                                <h4>hafiz-auth</h4>
+                                <p>AWS Signature V4 & LDAP authentication</p>
+                            </div>
+                        </div>
+                        <div class="arch-layer">
+                            <div class="arch-layer-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                                </svg>
+                            </div>
+                            <div class="arch-layer-content">
+                                <h4>hafiz-storage</h4>
+                                <p>Filesystem & S3 proxy backends</p>
+                            </div>
+                        </div>
+                        <div class="arch-layer">
+                            <div class="arch-layer-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                                </svg>
+                            </div>
+                            <div class="arch-layer-content">
+                                <h4>hafiz-metadata</h4>
+                                <p>SQLx with PostgreSQL & SQLite</p>
+                            </div>
+                        </div>
+                        <div class="arch-layer">
+                            <div class="arch-layer-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                </svg>
+                            </div>
+                            <div class="arch-layer-content">
+                                <h4>hafiz-crypto</h4>
+                                <p>AES-256-GCM encryption engine</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="arch-connector">↓</div>
-                    <div class="arch-layer">
-                        <div class="arch-label">Business Logic</div>
-                        <div class="arch-boxes">
-                            <div class="arch-box">hafiz-auth</div>
-                            <div class="arch-box">hafiz-storage</div>
-                            <div class="arch-box">hafiz-crypto</div>
+                </div>
+                <div class="arch-text animate-on-scroll">
+                    <h2>Modular Architecture</h2>
+                    <p>
+                        Built as a multi-crate Rust workspace for maintainability and performance.
+                        Each component is designed to be efficient, testable, and secure.
+                    </p>
+                    <div class="arch-features">
+                        <div class="arch-feature">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span>Memory safe by design</span>
                         </div>
-                    </div>
-                    <div class="arch-connector">↓</div>
-                    <div class="arch-layer">
-                        <div class="arch-label">Data Layer</div>
-                        <div class="arch-boxes">
-                            <div class="arch-box">hafiz-metadata</div>
-                            <div class="arch-box">hafiz-core</div>
+                        <div class="arch-feature">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span>Zero-copy where possible</span>
                         </div>
-                    </div>
-                    <div class="arch-connector">↓</div>
-                    <div class="arch-layer">
-                        <div class="arch-label">Storage</div>
-                        <div class="arch-boxes">
-                            <div class="arch-box">PostgreSQL</div>
-                            <div class="arch-box">SQLite</div>
-                            <div class="arch-box">Filesystem</div>
+                        <div class="arch-feature">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span>Async I/O throughout</span>
+                        </div>
+                        <div class="arch-feature">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span>Horizontal scaling</span>
+                        </div>
+                        <div class="arch-feature">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span>Plugin architecture</span>
+                        </div>
+                        <div class="arch-feature">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span>Comprehensive tests</span>
                         </div>
                     </div>
                 </div>
@@ -1099,163 +1456,79 @@
         </div>
     </section>
 
-    <!-- Comparison Section -->
-    <section class="comparison" id="comparison">
+    <!-- Code Section -->
+    <section class="code-section">
         <div class="container">
-            <div class="section-header">
-                <span class="section-label">Comparison</span>
-                <h2 class="section-title">How Hafiz Compares</h2>
-                <p class="section-description">
-                    See how Hafiz stacks up against other object storage solutions
-                </p>
-            </div>
-            <table class="comparison-table">
-                <thead>
-                    <tr>
-                        <th>Feature</th>
-                        <th class="hafiz-col">Hafiz</th>
-                        <th>MinIO</th>
-                        <th>Ceph RGW</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Language</td>
-                        <td class="hafiz-col"><strong>Rust</strong></td>
-                        <td>Go</td>
-                        <td>C++</td>
-                    </tr>
-                    <tr>
-                        <td>Single Binary</td>
-                        <td class="hafiz-col"><span class="check">✓</span></td>
-                        <td><span class="check">✓</span></td>
-                        <td><span class="cross">✗</span></td>
-                    </tr>
-                    <tr>
-                        <td>Air-Gap Ready</td>
-                        <td class="hafiz-col"><span class="check">✓</span></td>
-                        <td><span class="check">✓</span></td>
-                        <td><span class="cross">✗</span></td>
-                    </tr>
-                    <tr>
-                        <td>Web Console</td>
-                        <td class="hafiz-col"><span class="check">✓</span> WASM</td>
-                        <td><span class="check">✓</span> React</td>
-                        <td><span class="check">✓</span></td>
-                    </tr>
-                    <tr>
-                        <td>Memory Safety</td>
-                        <td class="hafiz-col"><span class="check">✓</span> Guaranteed</td>
-                        <td><span class="check">✓</span> GC</td>
-                        <td><span class="cross">✗</span></td>
-                    </tr>
-                    <tr>
-                        <td>SSE Encryption</td>
-                        <td class="hafiz-col"><span class="check">✓</span></td>
-                        <td><span class="check">✓</span></td>
-                        <td><span class="check">✓</span></td>
-                    </tr>
-                    <tr>
-                        <td>Object Versioning</td>
-                        <td class="hafiz-col"><span class="check">✓</span></td>
-                        <td><span class="check">✓</span></td>
-                        <td><span class="check">✓</span></td>
-                    </tr>
-                    <tr>
-                        <td>Lifecycle Policies</td>
-                        <td class="hafiz-col"><span class="check">✓</span></td>
-                        <td><span class="check">✓</span></td>
-                        <td><span class="check">✓</span></td>
-                    </tr>
-                    <tr>
-                        <td>License</td>
-                        <td class="hafiz-col">GPL-3.0</td>
-                        <td>AGPL-3.0</td>
-                        <td>LGPL</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
+            <div class="code-content">
+                <div class="code-text animate-on-scroll">
+                    <h2>Start in Seconds</h2>
+                    <p>
+                        Get Hafiz running with Docker in under a minute.
+                        Compatible with all S3 tools and SDKs out of the box.
+                    </p>
+                    <a href="docs/getting-started/quickstart/" class="btn-primary">
+                        View Quick Start Guide
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </div>
+                <div class="code-block animate-on-scroll">
+                    <div class="code-header">
+                        <span class="code-dot code-dot-red"></span>
+                        <span class="code-dot code-dot-yellow"></span>
+                        <span class="code-dot code-dot-green"></span>
+                        <span class="code-title">terminal</span>
+                    </div>
+                    <div class="code-content-inner">
+<pre><span class="comment"># Clone and build</span>
+git clone https://github.com/shellnoq/hafiz.git
+cd hafiz
+docker build -t hafiz:local .
 
-    <!-- Quick Start Section -->
-    <section class="quickstart" id="quickstart">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-label">Quick Start</span>
-                <h2 class="section-title">Up and Running in Minutes</h2>
-                <p class="section-description">
-                    Get started with Hafiz in just a few commands
-                </p>
-            </div>
-            <div class="quickstart-grid">
-                <div class="quickstart-step">
-                    <div class="step-number">1</div>
-                    <h3>Download & Install</h3>
-                    <div class="code-block">
-                        <code># Clone the repository<br>
-git clone https://github.com/shellnoq/hafiz.git<br>
-cd hafiz<br><br>
-# Build with Cargo<br>
-cargo build --release</code>
-                    </div>
-                </div>
-                <div class="quickstart-step">
-                    <div class="step-number">2</div>
-                    <h3>Start the Server</h3>
-                    <div class="code-block">
-                        <code># Run Hafiz server<br>
-./target/release/hafiz server \<br>
-&nbsp;&nbsp;--access-key admin \<br>
-&nbsp;&nbsp;--secret-key changeme123 \<br>
-&nbsp;&nbsp;--data-dir /var/lib/hafiz</code>
-                    </div>
-                </div>
-                <div class="quickstart-step">
-                    <div class="step-number">3</div>
-                    <h3>Configure AWS CLI</h3>
-                    <div class="code-block">
-                        <code># Set endpoint URL<br>
-aws configure set \<br>
-&nbsp;&nbsp;default.s3.endpoint_url \<br>
-&nbsp;&nbsp;http://localhost:9000<br><br>
-# Set credentials<br>
-aws configure set aws_access_key_id admin<br>
-aws configure set aws_secret_access_key changeme123</code>
-                    </div>
-                </div>
-                <div class="quickstart-step">
-                    <div class="step-number">4</div>
-                    <h3>Start Using</h3>
-                    <div class="code-block">
-                        <code># Create your first bucket<br>
-aws s3 mb s3://my-first-bucket<br><br>
-# Upload a file<br>
-aws s3 cp myfile.txt s3://my-first-bucket/<br><br>
-# Access Web Console<br>
-# Open http://localhost:9000 in browser</code>
+<span class="comment"># Run Hafiz</span>
+docker run -d \
+  --name hafiz \
+  -p <span class="variable">9000</span>:<span class="variable">9000</span> \
+  -v hafiz-data:/data \
+  -e <span class="string">HAFIZ_ROOT_ACCESS_KEY</span>=hafizadmin \
+  -e <span class="string">HAFIZ_ROOT_SECRET_KEY</span>=hafizadmin \
+  hafiz:local
+
+<span class="comment"># Test with AWS CLI</span>
+aws --endpoint-url <span class="string">http://localhost:9000</span> s3 mb s3://my-bucket
+aws --endpoint-url <span class="string">http://localhost:9000</span> s3 cp file.txt s3://my-bucket/</pre>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Enterprise CTA -->
-    <section class="enterprise-cta">
+    <!-- CTA Section -->
+    <section class="cta">
         <div class="container">
-            <div class="cta-card">
-                <h2>Need Enterprise Features?</h2>
+            <div class="cta-box animate-on-scroll">
+                <div class="cta-glow"></div>
+                <h2>Ready to Get Started?</h2>
                 <p>
-                    Get LDAP/AD integration, multi-site replication, priority support, 
-                    and SLA guarantees with Hafiz Enterprise.
+                    Deploy Hafiz today and take control of your object storage
+                    with enterprise-grade security and performance.
                 </p>
-                <div class="cta-features">
-                    <div class="cta-feature"><span class="check">✓</span> LDAP/Active Directory</div>
-                    <div class="cta-feature"><span class="check">✓</span> Multi-Site Replication</div>
-                    <div class="cta-feature"><span class="check">✓</span> Audit Logging</div>
-                    <div class="cta-feature"><span class="check">✓</span> 24/7 Support</div>
+                <div class="cta-buttons">
+                    <a href="docs/getting-started/quickstart/" class="btn-primary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                        Get Started
+                    </a>
+                    <a href="docs/" class="btn-secondary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+                        </svg>
+                        Read Docs
+                    </a>
                 </div>
-                <a href="mailto:enterprise@hafiz.dev" class="btn btn-primary">Contact Sales</a>
             </div>
         </div>
     </section>
@@ -1263,51 +1536,60 @@ aws s3 cp myfile.txt s3://my-first-bucket/<br><br>
     <!-- Footer -->
     <footer>
         <div class="container">
-            <div class="footer-grid">
+            <div class="footer-content">
                 <div class="footer-brand">
-                    <a href="#" class="logo">
-                        <div class="logo-icon">📦</div>
-                        Hafiz
+                    <a href="/" class="logo">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="40" height="40" rx="8" fill="url(#footerLogoGrad)"/>
+                            <path d="M12 14H18V26H12V14Z" fill="#0a0a0f"/>
+                            <path d="M22 14H28V20H22V14Z" fill="#0a0a0f"/>
+                            <path d="M22 22H28V26H22V22Z" fill="#0a0a0f"/>
+                            <path d="M18 18H22V22H18V18Z" fill="#0a0a0f"/>
+                            <defs>
+                                <linearGradient id="footerLogoGrad" x1="0" y1="0" x2="40" y2="40">
+                                    <stop offset="0%" stop-color="#00d4aa"/>
+                                    <stop offset="100%" stop-color="#00a8ff"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <span class="logo-text">Hafiz</span>
                     </a>
-                    <p>
-                        Enterprise-grade S3-compatible object storage. 
-                        Built with Rust for performance and reliability.
-                    </p>
+                    <p>Enterprise-grade S3-compatible object storage written in Rust.</p>
                 </div>
-                <div class="footer-column">
-                    <h4>Product</h4>
+                <div class="footer-section">
+                    <h4>Documentation</h4>
                     <ul>
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="#compatibility">S3 API</a></li>
-                        <li><a href="#comparison">Comparison</a></li>
-                        <li><a href="#quickstart">Quick Start</a></li>
+                        <li><a href="docs/getting-started/quickstart/">Quick Start</a></li>
+                        <li><a href="docs/user-guide/">User Guide</a></li>
+                        <li><a href="docs/api/">API Reference</a></li>
+                        <li><a href="docs/cli/">CLI Reference</a></li>
                     </ul>
                 </div>
-                <div class="footer-column">
-                    <h4>Resources</h4>
+                <div class="footer-section">
+                    <h4>Deployment</h4>
                     <ul>
-                        <li><a href="https://github.com/shellnoq/hafiz" target="_blank">Documentation</a></li>
+                        <li><a href="docs/deployment/docker/">Docker</a></li>
+                        <li><a href="docs/deployment/kubernetes/">Kubernetes</a></li>
+                        <li><a href="docs/deployment/cluster/">Multi-Server</a></li>
+                        <li><a href="docs/deployment/production/">Production</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
                         <li><a href="https://github.com/shellnoq/hafiz" target="_blank">GitHub</a></li>
-                        <li><a href="https://github.com/shellnoq/hafiz/releases" target="_blank">Releases</a></li>
-                        <li><a href="https://github.com/shellnoq/hafiz/blob/main/CHANGELOG.md" target="_blank">Changelog</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h4>Company</h4>
-                    <ul>
-                        <li><a href="#">About</a></li>
-                        <li><a href="mailto:enterprise@hafiz.dev">Enterprise</a></li>
-                        <li><a href="https://github.com/shellnoq/hafiz/blob/main/LICENSE" target="_blank">License</a></li>
-                        <li><a href="mailto:security@hafiz.dev">Security</a></li>
+                        <li><a href="https://github.com/shellnoq/hafiz/issues" target="_blank">Issues</a></li>
+                        <li><a href="https://github.com/shellnoq/hafiz/discussions" target="_blank">Discussions</a></li>
+                        <li><a href="docs/development/contributing/">Contributing</a></li>
                     </ul>
                 </div>
             </div>
             <div class="footer-bottom">
-                <span>© 2024 Hafiz. Licensed under GPL-3.0.</span>
+                <p>&copy; 2024 Hafiz. Open source under Apache 2.0 license.</p>
                 <div class="footer-social">
-                    <a href="https://github.com/shellnoq/hafiz" target="_blank" title="GitHub">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    <a href="https://github.com/shellnoq/hafiz" target="_blank" aria-label="GitHub">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
                         </svg>
                     </a>
                 </div>
@@ -1316,9 +1598,47 @@ aws s3 cp myfile.txt s3://my-first-bucket/<br><br>
     </footer>
 
     <script>
-        // Smooth scroll for navigation links
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Cluster node animation
+        const nodes = document.querySelectorAll('.cluster-node');
+        let activeIndex = 0;
+
+        setInterval(() => {
+            nodes.forEach(node => node.classList.remove('active'));
+            nodes[activeIndex].classList.add('active');
+            activeIndex = (activeIndex + 1) % nodes.length;
+        }, 1500);
+
+        // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
+            anchor.addEventListener('click', function(e) {
                 e.preventDefault();
                 const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
@@ -1328,38 +1648,6 @@ aws s3 cp myfile.txt s3://my-first-bucket/<br><br>
                     });
                 }
             });
-        });
-
-        // Add scroll effect to nav
-        window.addEventListener('scroll', () => {
-            const nav = document.querySelector('nav');
-            if (window.scrollY > 50) {
-                nav.style.background = 'rgba(10, 10, 15, 0.95)';
-            } else {
-                nav.style.background = 'rgba(10, 10, 15, 0.8)';
-            }
-        });
-
-        // Intersection Observer for fade-in animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('.feature-card, .quickstart-step, .arch-layer').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(20px)';
-            el.style.transition = 'all 0.6s ease';
-            observer.observe(el);
         });
     </script>
 </body>

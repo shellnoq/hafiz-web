@@ -1,0 +1,126 @@
+site_name: Hafiz Documentation
+site_url: https://hafiz.e2esolutions.tech/docs/
+site_description: Enterprise-grade S3-compatible object storage written in Rust
+site_author: Hafiz Team
+
+repo_name: shellnoq/hafiz
+repo_url: https://github.com/shellnoq/hafiz
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  custom_dir: docs/overrides
+  logo: assets/logo.svg
+  favicon: assets/favicon.svg
+  palette:
+    - scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.copy
+    - content.code.annotate
+  font:
+    text: Inter
+    code: JetBrains Mono
+
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/shellnoq/hafiz
+  generator: false
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - admonition
+  - tables
+  - attr_list
+  - md_in_html
+  - def_list
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Overview: getting-started/index.md
+    - Requirements: getting-started/requirements.md
+    - Installation: getting-started/installation.md
+    - Configuration: getting-started/configuration.md
+    - Quick Start: getting-started/quickstart.md
+  - User Guide:
+    - Overview: user-guide/index.md
+    - Buckets: user-guide/buckets.md
+    - Objects: user-guide/objects.md
+    - Versioning: user-guide/versioning.md
+    - Encryption: user-guide/encryption.md
+    - Object Lock: user-guide/object-lock.md
+    - Access Control: user-guide/access-control.md
+  - API Reference:
+    - Overview: api/index.md
+    - Authentication: api/authentication.md
+    - Buckets: api/buckets.md
+    - Objects: api/objects.md
+    - Error Codes: api/errors.md
+  - CLI:
+    - Overview: cli/index.md
+    - Commands: cli/commands.md
+  - Deployment:
+    - Overview: deployment/index.md
+    - Docker: deployment/docker.md
+    - Kubernetes: deployment/kubernetes.md
+    - Multi-Server Cluster: deployment/cluster.md
+    - Production: deployment/production.md
+  - Architecture:
+    - Overview: architecture/index.md
+    - Components: architecture/components.md
+    - Security: architecture/security.md
+  - Operations:
+    - Overview: operations/index.md
+    - Monitoring: operations/monitoring.md
+    - Backup: operations/backup.md
+    - Troubleshooting: operations/troubleshooting.md
+  - Development:
+    - Overview: development/index.md
+    - Contributing: development/contributing.md
+    - Roadmap: development/roadmap.md
+    - Changelog: development/changelog.md
+
+plugins:
+  - search
