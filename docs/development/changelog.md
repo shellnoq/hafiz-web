@@ -7,7 +7,7 @@ description: Version history
 
 All notable changes to Hafiz will be documented here.
 
-## [1.0.0] - 2025-01-15
+## [1.0.0] - 2025-12-15
 
 ### Production Ready Release
 
@@ -32,6 +32,10 @@ Hafiz is now production-ready for enterprise deployments.
 - Air-gapped system support
 - Helm chart for Kubernetes
 - CLI tool (hafiz-cli)
+- Erasure coding for data durability
+- Tiered storage (hot/warm/cold)
+- Data deduplication
+- Compression support
 
 ### Technical Highlights
 

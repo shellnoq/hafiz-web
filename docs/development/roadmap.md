@@ -19,6 +19,10 @@ Hafiz v1.0.0 is **production-ready** and fully supported for enterprise deployme
 - [x] Bucket policies & IAM-style access control
 - [x] Multi-part uploads
 - [x] Presigned URLs
+- [x] Erasure coding
+- [x] Tiered storage (hot/warm/cold)
+- [x] Data deduplication
+- [x] Compression
 
 ### Enterprise Features
 
@@ -41,26 +45,16 @@ Hafiz v1.0.0 is **production-ready** and fully supported for enterprise deployme
 
 ---
 
-## v1.1.0 - Enhanced Operations (Q2 2025)
-
-- [ ] S3 Select (query objects with SQL)
-- [ ] Improved Admin UI dashboard
-- [ ] Audit logging enhancements
-- [ ] Backup & restore automation
-
-## v1.2.0 - Advanced Storage (Q3 2025)
-
-- [ ] Erasure coding
-- [ ] Tiered storage (hot/warm/cold)
-- [ ] Data deduplication
-- [ ] Compression options
-
-## v1.3.0 - Extended Integrations (Q4 2025)
+## v1.1.0 - Extended Integrations (Q2 2026)
 
 - [ ] Terraform provider
 - [ ] Ansible roles
-- [ ] Vault integration for key management
 - [ ] OpenTelemetry tracing
+
+## v1.2.0 - Advanced Features (Q4 2026)
+
+- [ ] S3 Select (query objects with SQL)
+- [ ] Vault integration for key management
 
 ---
 
