@@ -14,9 +14,10 @@ description: Hafiz - Enterprise-grade S3-compatible object storage written in Ru
 </p>
 
 <p align="center">
-  <a href="https://github.com/shellnoq/hafiz/actions"><img src="https://github.com/shellnoq/hafiz/workflows/CI/badge.svg" alt="CI Status"></a>
-  <a href="https://github.com/shellnoq/hafiz/releases"><img src="https://img.shields.io/github/v/release/shellnoq/hafiz" alt="Release"></a>
-  <a href="https://github.com/shellnoq/hafiz/blob/main/LICENSE"><img src="https://img.shields.io/github/license/shellnoq/hafiz" alt="License"></a>
+  <img src="https://img.shields.io/badge/version-0.1.0-blue" alt="Version">
+  <img src="https://img.shields.io/badge/rust-1.85+-orange" alt="Rust">
+  <img src="https://img.shields.io/badge/license-Dual%20(AGPL%2FCommercial)-green" alt="License">
+  <img src="https://img.shields.io/badge/S3%20API-76%2B%20endpoints-blueviolet" alt="S3 API">
 </p>
 
 ---
@@ -163,7 +164,7 @@ description: Hafiz - Enterprise-grade S3-compatible object storage written in Ru
 | Object Lock | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | LDAP | :white_check_mark: | Enterprise | :x: |
 | Written in Rust | :white_check_mark: | :x: Go | :x: |
-| License | Apache 2.0 | AGPL | N/A |
+| License | AGPL / Commercial | AGPL | N/A |
 | Self-Hosted | :white_check_mark: | :white_check_mark: | :x: |
 
 ## Getting Help
@@ -174,4 +175,9 @@ description: Hafiz - Enterprise-grade S3-compatible object storage written in Ru
 
 ## License
 
-Hafiz is open source under the [Apache License 2.0](https://github.com/shellnoq/hafiz/blob/main/LICENSE).
+Hafiz is available under a **Dual License** model:
+
+- **AGPL-3.0** - Free for open source projects and non-commercial use
+- **Commercial License** - For proprietary/commercial deployments without AGPL obligations
+
+[Contact us](mailto:info@e2esolutions.tech) for commercial licensing inquiries.
