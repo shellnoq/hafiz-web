@@ -15,7 +15,7 @@ All requests must be signed using AWS Signature Version 4:
 
 ```bash
 # AWS CLI handles this automatically
-aws --endpoint-url https://hafiz.local:9000 s3 ls
+aws --endpoint-url http://localhost:9000 s3 ls
 
 # Or set credentials
 export AWS_ACCESS_KEY_ID=your-access-key
@@ -57,7 +57,7 @@ IAM-style policies for fine-grained access control.
 ### Apply Policy
 
 ```bash
-aws --endpoint-url https://hafiz.local:9000 s3api put-bucket-policy \
+aws --endpoint-url http://localhost:9000 s3api put-bucket-policy \
     --bucket my-bucket \
     --policy file://policy.json
 ```
@@ -147,13 +147,196 @@ aws --endpoint-url https://hafiz.local:9000 s3api put-bucket-policy \
 
 ## User Management
 
-Create and manage users via the Admin API:
+Hafiz provides comprehensive IAM-style user management with bucket-level access control.
+
+### Creating Users
 
 ```bash
-# Create user
-curl -X POST http://localhost:9001/api/v1/users \
-    -H "Authorization: Bearer $TOKEN" \
-    -d '{"username": "alice", "access_key": "...", "secret_key": "..."}'
+# Create a basic user
+curl -X POST http://localhost:9000/admin/users \
+    -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "name": "alice",
+      "email": "alice@example.com",
+      "description": "Development team member"
+    }'
+```
+
+Response:
+```json
+{
+  "name": "alice",
+  "access_key": "AKIAXXXXXXXXXXXXXXXX",
+  "secret_key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "email": "alice@example.com",
+  "description": "Development team member",
+  "created_at": "2024-01-15T10:00:00Z",
+  "bucket_access": []
+}
+```
+
+### IAM-Style Bucket Access
+
+Assign users to specific buckets with granular permissions:
+
+| Permission | Allows |
+|------------|--------|
+| `read` | GetObject, ListBucket, HeadObject |
+| `write` | PutObject, DeleteObject |
+| `readwrite` | All read and write operations |
+| `none` | No access (explicit deny) |
+
+#### Create User with Bucket Access
+
+```bash
+curl -X POST http://localhost:9000/admin/users \
+    -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "name": "app-service",
+      "description": "Application service account",
+      "bucket_access": [
+        {"bucket": "production-data", "permission": "readwrite"},
+        {"bucket": "logs", "permission": "write"},
+        {"bucket": "config", "permission": "read"}
+      ]
+    }'
+```
+
+#### Update User Bucket Access
+
+```bash
+curl -X PUT http://localhost:9000/admin/users/AKIAXXXXXXXXXXXXXXXX/buckets \
+    -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "bucket_access": [
+        {"bucket": "production-data", "permission": "read"},
+        {"bucket": "backups", "permission": "readwrite"}
+      ]
+    }'
+```
+
+### List Users
+
+```bash
+curl http://localhost:9000/admin/users \
+    -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)"
+```
+
+Response:
+```json
+{
+  "users": [
+    {
+      "name": "alice",
+      "access_key": "AKIAXXXXXXXXXXXXXXXX",
+      "email": "alice@example.com",
+      "description": "Development team member",
+      "enabled": true,
+      "created_at": "2024-01-15T10:00:00Z",
+      "bucket_access": [
+        {"bucket": "dev-bucket", "permission": "readwrite"}
+      ],
+      "is_admin": false
+    }
+  ],
+  "total": 1
+}
+```
+
+### Get Specific User
+
+```bash
+curl http://localhost:9000/admin/users/AKIAXXXXXXXXXXXXXXXX \
+    -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)"
+```
+
+### Enable/Disable Users
+
+```bash
+# Disable user (revoke all access)
+curl -X POST http://localhost:9000/admin/users/AKIAXXXXXXXXXXXXXXXX/disable \
+    -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)"
+
+# Enable user
+curl -X POST http://localhost:9000/admin/users/AKIAXXXXXXXXXXXXXXXX/enable \
+    -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)"
+```
+
+### Rotate Credentials
+
+```bash
+curl -X POST http://localhost:9000/admin/users/AKIAXXXXXXXXXXXXXXXX/keys \
+    -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)"
+```
+
+Response:
+```json
+{
+  "access_key": "AKIANEWKEYXXXXXXXXX",
+  "secret_key": "newxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "created_at": "2024-01-15T12:00:00Z"
+}
+```
+
+### Delete User
+
+```bash
+curl -X DELETE http://localhost:9000/admin/users/AKIAXXXXXXXXXXXXXXXX \
+    -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)"
+```
+
+### Use Case Examples
+
+#### Read-Only Backup User
+
+```bash
+curl -X POST http://localhost:9000/admin/users \
+    -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "name": "backup-reader",
+      "description": "Backup service - read only access to all backups",
+      "bucket_access": [
+        {"bucket": "daily-backups", "permission": "read"},
+        {"bucket": "weekly-backups", "permission": "read"},
+        {"bucket": "monthly-backups", "permission": "read"}
+      ]
+    }'
+```
+
+#### Application Service Account
+
+```bash
+curl -X POST http://localhost:9000/admin/users \
+    -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "name": "webapp-service",
+      "description": "Web application service account",
+      "bucket_access": [
+        {"bucket": "user-uploads", "permission": "readwrite"},
+        {"bucket": "static-assets", "permission": "read"},
+        {"bucket": "temp-files", "permission": "write"}
+      ]
+    }'
+```
+
+#### Replication Service User
+
+```bash
+curl -X POST http://localhost:9000/admin/users \
+    -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "name": "replication-service",
+      "description": "Internal replication service for DR site",
+      "bucket_access": [
+        {"bucket": "production-data", "permission": "write"}
+      ]
+    }'
 ```
 
 ## Public Bucket Access
@@ -206,18 +389,18 @@ Generate time-limited URLs for temporary access without sharing credentials.
 
 ```bash
 # Via Admin API
-curl -X GET "https://hafiz.local:9000/api/v1/presigned/download/my-bucket/file.pdf?expires_in=3600" \
+curl -X GET "http://localhost:9000/api/v1/presigned/download/my-bucket/file.pdf?expires_in=3600" \
     -H "Authorization: Bearer $TOKEN"
 
 # Via AWS CLI
-aws --endpoint-url https://hafiz.local:9000 s3 presign s3://my-bucket/file.pdf --expires-in 3600
+aws --endpoint-url http://localhost:9000 s3 presign s3://my-bucket/file.pdf --expires-in 3600
 ```
 
 ### Generate Presigned Upload URL
 
 ```bash
 # Via Admin API
-curl -X GET "https://hafiz.local:9000/api/v1/presigned/upload/my-bucket/uploads/file.pdf?expires_in=3600" \
+curl -X GET "http://localhost:9000/api/v1/presigned/upload/my-bucket/uploads/file.pdf?expires_in=3600" \
     -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -225,7 +408,7 @@ curl -X GET "https://hafiz.local:9000/api/v1/presigned/upload/my-bucket/uploads/
 
 ```json
 {
-  "url": "https://hafiz.local:9000/my-bucket/file.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&...",
+  "url": "http://localhost:9000/my-bucket/file.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&...",
   "expires_at": "2024-01-15T12:00:00Z",
   "bucket": "my-bucket",
   "key": "file.pdf"

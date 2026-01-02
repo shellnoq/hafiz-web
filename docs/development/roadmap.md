@@ -5,7 +5,50 @@ description: Hafiz development roadmap
 
 # Roadmap
 
+## v1.0.1 - Enterprise Enhancements :white_check_mark:
+
+Released: January 2026
+
+### IAM-Style Access Control
+
+- [x] User-level bucket access policies (Read/Write/ReadWrite/None)
+- [x] Pattern-based bucket matching with wildcards
+- [x] Service account support for applications
+- [x] User description and metadata fields
+
+### Replication Enhancements
+
+- [x] Unidirectional replication (Primary → Replica)
+- [x] Read-only replica site configuration
+- [x] Replication direction modes (Bidirectional, SourceToDestination, DestinationToSource)
+- [x] Automatic failover procedures
+
+### Documentation & Tooling
+
+- [x] Comprehensive air-gap deployment guide
+- [x] Export/import scripts for offline transfers
+- [x] Incremental sync for air-gapped environments
+- [x] Enhanced cluster node addition guide
+
+### Admin Panel
+
+- [x] Professional theme with visible navigation state
+- [x] Browse Objects button on bucket cards
+- [x] User description visibility in UI
+- [x] Improved active tab indicators
+
+### Error Handling
+
+- [x] Comprehensive error code system (50+ error types)
+- [x] Internationalization support (English/Turkish)
+- [x] S3-compatible error responses
+- [x] Detailed debugging messages
+
+---
+
 ## v1.0.0 - Production Ready :white_check_mark:
+
+Released: December 2025
 
 Hafiz v1.0.0 is **production-ready** and fully supported for enterprise deployments.
 

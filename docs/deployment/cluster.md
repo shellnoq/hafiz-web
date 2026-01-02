@@ -10,10 +10,15 @@ This guide covers deploying Hafiz across multiple physical servers with shared P
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
+- [Quick Start: Dual Cluster with Docker Compose](#quick-start-dual-cluster-with-docker-compose)
 - [Single-Network Cluster](#step-1-postgresql-setup)
 - [Adding Servers to Existing Cluster](#adding-servers-to-existing-cluster)
 - [Cross-Network Replication](#cross-network-replication)
+- [What is Air-Gap?](#what-is-air-gap)
+- [Unidirectional Replication (One-Way Sync)](#unidirectional-replication-one-way-sync)
 - [Air-Gapped System Replication](#air-gapped-system-replication)
+- [Failover and Recovery](#failover-and-recovery)
+- [Node Management API](#node-management-api)
 
 ## Architecture Overview
 
@@ -47,6 +52,409 @@ This guide covers deploying Hafiz across multiple physical servers with shared P
 - PostgreSQL 13+ on a dedicated server (or managed service)
 - Network connectivity between all nodes
 - Domain name with DNS configured (e.g., `dev-hafiz.e2e.lab`)
+
+---
+
+## Quick Start: Dual Cluster with Docker Compose
+
+This section provides a complete step-by-step guide for deploying two Hafiz clusters with automatic synchronization.
+
+### Dual Cluster Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            CLUSTER A (Primary)                               │
+│                          Server: 192.168.1.100                               │
+│                                                                              │
+│   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐   ┌──────────────┐   │
+│   │ hafiz-node1 │   │ hafiz-node2 │   │ hafiz-node3 │   │  PostgreSQL  │   │
+│   │   :9000     │   │   :9010     │   │   :9020     │   │    :5432     │   │
+│   └──────┬──────┘   └──────┬──────┘   └──────┬──────┘   └──────┬───────┘   │
+│          └─────────────────┴─────────────────┴─────────────────┘            │
+│                                      │                                       │
+│                              ┌───────┴───────┐                              │
+│                              │   HAProxy     │                              │
+│                              │   :80/:443    │                              │
+│                              └───────────────┘                              │
+└─────────────────────────────────────┬───────────────────────────────────────┘
+                                      │
+                           ┌──────────┴──────────┐
+                           │  Network / VPN /    │
+                           │   Internet Link     │
+                           └──────────┬──────────┘
+                                      │
+┌─────────────────────────────────────┴───────────────────────────────────────┐
+│                            CLUSTER B (Secondary)                             │
+│                          Server: 192.168.2.100                               │
+│                                                                              │
+│   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐   ┌──────────────┐   │
+│   │ hafiz-node1 │   │ hafiz-node2 │   │ hafiz-node3 │   │  PostgreSQL  │   │
+│   │   :9000     │   │   :9010     │   │   :9020     │   │    :5432     │   │
+│   └──────┬──────┘   └──────┬──────┘   └──────┬──────┘   └──────┬───────┘   │
+│          └─────────────────┴─────────────────┴─────────────────┘            │
+│                                      │                                       │
+│                              ┌───────┴───────┐                              │
+│                              │   HAProxy     │                              │
+│                              │   :80/:443    │                              │
+│                              └───────────────┘                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Step 1: Deploy Cluster A (Primary)
+
+On the first server (192.168.1.100):
+
+```bash
+# Clone the repository
+git clone https://github.com/shellnoq/hafiz.git
+cd hafiz
+
+# Create environment file
+cat > .env << 'EOF'
+POSTGRES_PASSWORD=cluster_a_password_here
+HAFIZ_ROOT_ACCESS_KEY=hafizadmin
+HAFIZ_ROOT_SECRET_KEY=your_secret_key_here
+EOF
+
+# Build the Docker image
+docker build -t hafiz:latest .
+
+# Start Cluster A
+docker compose -f docker-compose.cluster.yml up -d
+
+# Verify all containers are running
+docker ps
+```
+
+Expected output:
+```
+CONTAINER ID   IMAGE                COMMAND                  STATUS          PORTS
+xxxx           hafiz:latest         "/usr/bin/tini -- ha…"   Up (healthy)    0.0.0.0:9000->9000/tcp
+xxxx           hafiz:latest         "/usr/bin/tini -- ha…"   Up (healthy)    0.0.0.0:9010->9000/tcp
+xxxx           hafiz:latest         "/usr/bin/tini -- ha…"   Up (healthy)    0.0.0.0:9020->9000/tcp
+xxxx           postgres:16-alpine   "docker-entrypoint.s…"   Up (healthy)    0.0.0.0:5432->5432/tcp
+xxxx           haproxy:2.9-alpine   "docker-entrypoint.s…"   Up              0.0.0.0:80->80/tcp
+```
+
+### Step 2: Verify Cluster A is Working
+
+```bash
+# Check health endpoint
+curl http://localhost:9000/health
+
+# Access admin panel
+echo "Admin Panel: http://192.168.1.100:9000/admin"
+
+# Create a test bucket
+aws --endpoint-url http://localhost:9000 s3 mb s3://test-bucket
+
+# Upload a test file
+echo "Hello from Cluster A" > test.txt
+aws --endpoint-url http://localhost:9000 s3 cp test.txt s3://test-bucket/
+
+# List objects
+aws --endpoint-url http://localhost:9000 s3 ls s3://test-bucket/
+```
+
+### Step 3: Deploy Cluster B (Secondary)
+
+On the second server (192.168.2.100):
+
+```bash
+# Clone the repository
+git clone https://github.com/shellnoq/hafiz.git
+cd hafiz
+
+# Create environment file with DIFFERENT credentials
+cat > .env << 'EOF'
+POSTGRES_PASSWORD=cluster_b_password_here
+HAFIZ_ROOT_ACCESS_KEY=hafizadmin
+HAFIZ_ROOT_SECRET_KEY=your_secret_key_here
+EOF
+
+# Build the Docker image
+docker build -t hafiz:latest .
+
+# Start Cluster B
+docker compose -f docker-compose.cluster.yml up -d
+
+# Verify all containers are running
+docker ps
+```
+
+### Step 4: Configure Cluster Synchronization
+
+There are three options for synchronizing data between clusters:
+
+#### Option A: PostgreSQL Logical Replication (Recommended for Metadata)
+
+This keeps metadata (buckets, users, policies) synchronized in real-time.
+
+**On Cluster A (Primary) - PostgreSQL Container:**
+
+```bash
+# Connect to PostgreSQL
+docker exec -it hafiz-postgres psql -U hafiz -d hafiz
+
+# Enable logical replication
+ALTER SYSTEM SET wal_level = logical;
+ALTER SYSTEM SET max_replication_slots = 4;
+ALTER SYSTEM SET max_wal_senders = 4;
+
+# Create replication user
+CREATE ROLE replicator WITH REPLICATION LOGIN PASSWORD 'repl_secure_password';
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO replicator;
+
+# Create publication for all tables
+CREATE PUBLICATION hafiz_replication FOR ALL TABLES;
+
+# Exit and restart PostgreSQL
+\q
+```
+
+```bash
+docker restart hafiz-postgres
+```
+
+**On Cluster B (Secondary) - PostgreSQL Container:**
+
+```bash
+# Connect to PostgreSQL
+docker exec -it hafiz-postgres psql -U hafiz -d hafiz
+
+# Create subscription to Cluster A
+CREATE SUBSCRIPTION hafiz_subscription
+    CONNECTION 'host=192.168.1.100 port=5432 dbname=hafiz user=replicator password=repl_secure_password'
+    PUBLICATION hafiz_replication;
+
+# Verify subscription is active
+SELECT * FROM pg_stat_subscription;
+
+\q
+```
+
+#### Option B: Object Data Synchronization with rclone
+
+For synchronizing actual object files between clusters:
+
+```bash
+# Install rclone on both servers
+curl https://rclone.org/install.sh | sudo bash
+
+# Configure Cluster A as source
+rclone config create cluster_a s3 \
+    provider=Other \
+    endpoint=http://192.168.1.100:9000 \
+    access_key_id=hafizadmin \
+    secret_access_key=your_secret_key_here
+
+# Configure Cluster B as target
+rclone config create cluster_b s3 \
+    provider=Other \
+    endpoint=http://192.168.2.100:9000 \
+    access_key_id=hafizadmin \
+    secret_access_key=your_secret_key_here
+
+# Test sync (dry run first)
+rclone sync cluster_a:test-bucket cluster_b:test-bucket --dry-run
+
+# Run actual sync
+rclone sync cluster_a:test-bucket cluster_b:test-bucket --progress
+
+# Verify on Cluster B
+aws --endpoint-url http://192.168.2.100:9000 s3 ls s3://test-bucket/
+```
+
+**Automated Sync with Cron:**
+
+```bash
+# Create sync script
+cat > /opt/hafiz/sync-clusters.sh << 'EOF'
+#!/bin/bash
+# Sync all buckets from Cluster A to Cluster B
+
+LOG_FILE="/var/log/hafiz-sync.log"
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
+echo "[$TIMESTAMP] Starting cluster sync..." >> $LOG_FILE
+
+# Get list of buckets from Cluster A
+BUCKETS=$(rclone lsd cluster_a: | awk '{print $5}')
+
+for bucket in $BUCKETS; do
+    echo "[$TIMESTAMP] Syncing bucket: $bucket" >> $LOG_FILE
+    rclone sync cluster_a:$bucket cluster_b:$bucket \
+        --checksum \
+        --transfers 4 \
+        --checkers 8 \
+        2>> $LOG_FILE
+done
+
+echo "[$TIMESTAMP] Sync completed." >> $LOG_FILE
+EOF
+
+chmod +x /opt/hafiz/sync-clusters.sh
+
+# Add to crontab (every 5 minutes)
+(crontab -l 2>/dev/null; echo "*/5 * * * * /opt/hafiz/sync-clusters.sh") | crontab -
+```
+
+#### Option C: Real-Time Bidirectional Sync
+
+For active-active clusters where both can accept writes:
+
+```bash
+# Create bidirectional sync script
+cat > /opt/hafiz/bidirectional-sync.sh << 'EOF'
+#!/bin/bash
+# Bidirectional sync between clusters
+
+LOG_FILE="/var/log/hafiz-bisync.log"
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
+echo "[$TIMESTAMP] Starting bidirectional sync..." >> $LOG_FILE
+
+# Get all buckets from both clusters
+BUCKETS_A=$(rclone lsd cluster_a: 2>/dev/null | awk '{print $5}')
+BUCKETS_B=$(rclone lsd cluster_b: 2>/dev/null | awk '{print $5}')
+ALL_BUCKETS=$(echo -e "$BUCKETS_A\n$BUCKETS_B" | sort -u)
+
+for bucket in $ALL_BUCKETS; do
+    echo "[$TIMESTAMP] Bidirectional sync: $bucket" >> $LOG_FILE
+
+    # Sync A -> B (new files from A)
+    rclone copy cluster_a:$bucket cluster_b:$bucket \
+        --checksum --update 2>> $LOG_FILE
+
+    # Sync B -> A (new files from B)
+    rclone copy cluster_b:$bucket cluster_a:$bucket \
+        --checksum --update 2>> $LOG_FILE
+done
+
+echo "[$TIMESTAMP] Bidirectional sync completed." >> $LOG_FILE
+EOF
+
+chmod +x /opt/hafiz/bidirectional-sync.sh
+
+# Run every minute for near real-time sync
+(crontab -l 2>/dev/null; echo "* * * * * /opt/hafiz/bidirectional-sync.sh") | crontab -
+```
+
+### Step 5: Verify Synchronization
+
+**Test metadata sync (if using PostgreSQL replication):**
+
+```bash
+# Create user on Cluster A
+curl -X POST http://192.168.1.100:9000/api/v1/users \
+    -H "Content-Type: application/json" \
+    -d '{"name": "testuser", "email": "test@example.com"}'
+
+# Verify user appears on Cluster B (should sync within seconds)
+curl http://192.168.2.100:9000/api/v1/users
+```
+
+**Test object sync:**
+
+```bash
+# Upload to Cluster A
+aws --endpoint-url http://192.168.1.100:9000 s3 cp myfile.txt s3://test-bucket/
+
+# Wait for sync (based on your cron interval)
+sleep 60
+
+# Verify on Cluster B
+aws --endpoint-url http://192.168.2.100:9000 s3 ls s3://test-bucket/
+aws --endpoint-url http://192.168.2.100:9000 s3 cp s3://test-bucket/myfile.txt -
+```
+
+### Step 6: Set Up Load Balancer for Failover
+
+Configure HAProxy or nginx to route traffic with automatic failover:
+
+```haproxy
+# /etc/haproxy/haproxy-global.cfg
+
+global
+    log /dev/log local0
+    maxconn 4096
+
+defaults
+    mode http
+    timeout connect 5000ms
+    timeout client 50000ms
+    timeout server 50000ms
+    option httpchk GET /health
+
+frontend hafiz_frontend
+    bind *:9000
+    default_backend hafiz_clusters
+
+backend hafiz_clusters
+    balance roundrobin
+    option httpchk GET /health
+
+    # Cluster A nodes (primary)
+    server cluster_a_node1 192.168.1.100:9000 check weight 100
+    server cluster_a_node2 192.168.1.100:9010 check weight 100
+
+    # Cluster B nodes (backup)
+    server cluster_b_node1 192.168.2.100:9000 check backup
+    server cluster_b_node2 192.168.2.100:9010 check backup
+```
+
+### Step 7: Monitoring and Health Checks
+
+**Create health check script:**
+
+```bash
+cat > /opt/hafiz/health-check.sh << 'EOF'
+#!/bin/bash
+
+CLUSTERS=("192.168.1.100:9000" "192.168.2.100:9000")
+WEBHOOK_URL="https://your-slack-webhook-url"
+
+for cluster in "${CLUSTERS[@]}"; do
+    STATUS=$(curl -sf "http://$cluster/health" | jq -r '.status' 2>/dev/null)
+
+    if [ "$STATUS" != "healthy" ]; then
+        echo "ALERT: Cluster $cluster is unhealthy!"
+
+        # Send alert (Slack example)
+        curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"⚠️ Hafiz cluster $cluster is unhealthy!\"}" \
+            $WEBHOOK_URL
+    fi
+done
+EOF
+
+chmod +x /opt/hafiz/health-check.sh
+
+# Check every minute
+(crontab -l 2>/dev/null; echo "* * * * * /opt/hafiz/health-check.sh") | crontab -
+```
+
+### Troubleshooting Dual Cluster Setup
+
+| Issue | Solution |
+|-------|----------|
+| PostgreSQL replication lag | Check network latency, increase `wal_sender_timeout` |
+| Objects not syncing | Verify rclone config with `rclone lsd cluster_a:` |
+| Connection refused | Check firewall rules: ports 5432, 9000 |
+| Authentication failed | Verify credentials in .env files match |
+| Containers unhealthy | Check logs: `docker logs hafiz-node1` |
+
+**View sync logs:**
+```bash
+tail -f /var/log/hafiz-sync.log
+```
+
+**Check PostgreSQL replication status:**
+```bash
+docker exec hafiz-postgres psql -U hafiz -d hafiz -c "SELECT * FROM pg_stat_subscription;"
+```
+
+---
 
 ## Step 1: PostgreSQL Setup
 
@@ -668,9 +1076,278 @@ sudo systemctl enable --now wg-quick@wg0
 
 ---
 
+## What is Air-Gap?
+
+An **air-gapped network** is a security measure where a computer or network is physically isolated from other networks, including the internet. There is no wired or wireless connection between the air-gapped system and any other network.
+
+### Why Use Air-Gap?
+
+| Use Case | Description |
+|----------|-------------|
+| **Classified Networks** | Military, intelligence, and government systems handling sensitive data |
+| **Critical Infrastructure** | Power grids, water treatment, nuclear facilities |
+| **Financial Systems** | High-security trading systems, core banking |
+| **Healthcare** | Patient data isolation, medical device networks |
+| **Research Labs** | Protecting intellectual property and sensitive research |
+| **Disaster Recovery** | Offline backup sites immune to ransomware attacks |
+
+### How Hafiz Supports Air-Gap
+
+Hafiz provides complete air-gap support through:
+
+1. **Export/Import Tools**: Scripts to export all data (metadata + objects) to physical media
+2. **Checksum Verification**: SHA-256 checksums at every level for data integrity
+3. **Incremental Sync**: Export only changed objects since last sync
+4. **Encrypted Media Support**: Works with LUKS-encrypted USB drives
+5. **Audit Trail**: Complete logging of all export/import operations
+
+### Air-Gap Workflow Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              AIR-GAP WORKFLOW                                │
+│                                                                              │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌────────────┐│
+│  │   Source     │───▶│   Export     │───▶│   Physical   │───▶│   Import   ││
+│  │   Cluster    │    │   Server     │    │   Transfer   │    │   Server   ││
+│  │ (Read-Write) │    │              │    │  (USB/Tape)  │    │            ││
+│  └──────────────┘    └──────────────┘    └──────────────┘    └─────┬──────┘│
+│                                                                      │       │
+│                                                                      ▼       │
+│                                                              ┌────────────┐ │
+│                                                              │   Target   │ │
+│                                                              │   Cluster  │ │
+│                                                              │ (Read-Only)│ │
+│                                                              └────────────┘ │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Unidirectional Replication (One-Way Sync)
+
+Hafiz supports unidirectional replication where one cluster is read-write (primary) and the other is read-only (replica). This is ideal for:
+
+- **Disaster Recovery**: Main site writes, DR site receives copies
+- **Content Distribution**: Central site publishes, edge sites consume
+- **Regulatory Compliance**: Write to secure location, replicate to reporting systems
+- **Air-Gapped Backup**: Secure network writes, isolated network receives
+
+### Replication Direction Modes
+
+| Mode | Source | Destination | Use Case |
+|------|--------|-------------|----------|
+| `Bidirectional` | Read-Write | Read-Write | Active-active clusters |
+| `SourceToDestination` | Read-Write | Read-Only | Primary/replica setup |
+| `DestinationToSource` | Read-Only | Read-Write | Reverse flow setup |
+
+### Configuring Unidirectional Replication via API
+
+#### Create a One-Way Replication Rule
+
+```bash
+# Create replication rule: Primary → Replica (one-way)
+curl -X POST http://localhost:9000/admin/cluster/replication/rules \
+  -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "primary-to-dr",
+    "source_bucket": "production-data",
+    "destination_bucket": "production-data",
+    "destination_endpoint": "http://dr-site.example.com:9000",
+    "destination_access_key": "dr_access_key",
+    "destination_secret_key": "dr_secret_key",
+    "direction": "SourceToDestination",
+    "status": "enabled",
+    "priority": 1,
+    "filter_prefix": ""
+  }'
+```
+
+#### Check Replication Rule
+
+```bash
+curl -X GET http://localhost:9000/admin/cluster/replication/rules/primary-to-dr \
+  -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)"
+```
+
+Response:
+```json
+{
+  "id": "primary-to-dr",
+  "source_bucket": "production-data",
+  "destination_bucket": "production-data",
+  "destination_endpoint": "http://dr-site.example.com:9000",
+  "direction": "SourceToDestination",
+  "status": "enabled",
+  "priority": 1
+}
+```
+
+### Configuring Read-Only Replica
+
+On the destination cluster, configure the bucket to reject writes:
+
+#### Option 1: User-Level Permission (Recommended)
+
+Create users on the replica site with read-only bucket access:
+
+```bash
+# Create read-only user for replica bucket
+curl -X POST http://dr-site:9000/admin/users \
+  -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "replica-reader",
+    "description": "Read-only user for replicated data",
+    "bucket_access": [
+      {"bucket": "production-data", "permission": "read"}
+    ]
+  }'
+```
+
+Response:
+```json
+{
+  "name": "replica-reader",
+  "access_key": "AKIAXXXXXXXXXXXXXXXX",
+  "secret_key": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "description": "Read-only user for replicated data",
+  "bucket_access": [
+    {"bucket": "production-data", "permission": "read"}
+  ]
+}
+```
+
+#### Option 2: Replication Service Account
+
+The replication service uses a dedicated account with write access, while all other users have read-only access:
+
+```bash
+# Replication service account (has write for sync)
+curl -X POST http://dr-site:9000/admin/users \
+  -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "replication-service",
+    "description": "Internal replication service - write access for sync only",
+    "bucket_access": [
+      {"bucket": "production-data", "permission": "write"}
+    ]
+  }'
+
+# Regular users get read-only
+curl -X POST http://dr-site:9000/admin/users \
+  -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "app-user",
+    "description": "Application user - read only on DR site",
+    "bucket_access": [
+      {"bucket": "production-data", "permission": "read"}
+    ]
+  }'
+```
+
+### Architecture: Unidirectional Replication
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       PRIMARY SITE (Read-Write)                              │
+│                                                                              │
+│   ┌─────────────┐     ┌─────────────┐     ┌─────────────┐                  │
+│   │  App Server │────▶│   Hafiz     │────▶│ PostgreSQL  │                  │
+│   │  (Writes)   │     │  Primary    │     │  Primary    │                  │
+│   └─────────────┘     └──────┬──────┘     └─────────────┘                  │
+│                              │                                               │
+│                              │ Replication Events                            │
+│                              ▼                                               │
+│                     ┌────────────────┐                                      │
+│                     │   Replication  │                                      │
+│                     │    Service     │                                      │
+│                     │ (direction:    │                                      │
+│                     │  source→dest)  │                                      │
+│                     └────────┬───────┘                                      │
+└──────────────────────────────┼──────────────────────────────────────────────┘
+                               │
+                    Objects + Metadata
+                               │
+                               ▼
+┌──────────────────────────────┼──────────────────────────────────────────────┐
+│                              │                                               │
+│                     ┌────────▼───────┐                                      │
+│                     │   Replication  │                                      │
+│                     │    Receiver    │                                      │
+│                     │  (write-only   │                                      │
+│                     │   service)     │                                      │
+│                     └────────┬───────┘                                      │
+│                              │                                               │
+│   ┌─────────────┐     ┌──────▼──────┐     ┌─────────────┐                  │
+│   │  App Server │────▶│   Hafiz     │────▶│ PostgreSQL  │                  │
+│   │ (Read Only) │     │   Replica   │     │   Replica   │                  │
+│   └─────────────┘     └─────────────┘     └─────────────┘                  │
+│                                                                              │
+│                      REPLICA SITE (Read-Only for Users)                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Monitoring Unidirectional Replication
+
+```bash
+# Check replication lag
+curl http://primary:9000/admin/cluster/replication/stats \
+  -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)"
+```
+
+Response:
+```json
+{
+  "events_processed": 15420,
+  "successful": 15418,
+  "failed": 2,
+  "pending": 5,
+  "in_progress": 1,
+  "bytes_replicated": 1073741824,
+  "avg_latency_ms": 45.2,
+  "rules": [
+    {
+      "id": "primary-to-dr",
+      "direction": "SourceToDestination",
+      "pending_events": 5,
+      "last_sync": "2024-01-15T12:30:00Z"
+    }
+  ]
+}
+```
+
+### Failover to Read-Only Replica
+
+If you need to promote the replica to primary:
+
+```bash
+# 1. Stop replication rule
+curl -X DELETE http://primary:9000/admin/cluster/replication/rules/primary-to-dr \
+  -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)"
+
+# 2. Update user permissions on replica to allow writes
+curl -X PUT http://dr-site:9000/admin/users/app-user/buckets \
+  -H "Authorization: Basic $(echo -n 'hafizadmin:secret' | base64)" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "bucket_access": [
+      {"bucket": "production-data", "permission": "readwrite"}
+    ]
+  }'
+
+# 3. Update DNS to point to replica
+# 4. Start accepting traffic on replica
+```
+
+---
+
 ## Air-Gapped System Replication
 
-For environments with no network connectivity (classified networks, secure facilities, disaster recovery sites), Hafiz supports offline data transfer.
+For environments with no network connectivity (classified networks, secure facilities, disaster recovery sites), Hafiz supports offline data transfer. See [What is Air-Gap?](#what-is-air-gap) for more context.
 
 ### Architecture: Air-Gapped Setup
 
@@ -722,7 +1399,7 @@ set -e
 
 EXPORT_DIR="/mnt/export/hafiz-$(date +%Y%m%d-%H%M%S)"
 POSTGRES_URL="postgresql://hafiz:password@localhost:5432/hafiz"
-S3_ENDPOINT="https://hafiz.local:9000"
+S3_ENDPOINT="http://localhost:9000"
 
 mkdir -p "$EXPORT_DIR"/{metadata,objects,checksums}
 
@@ -829,7 +1506,7 @@ set -e
 
 IMPORT_FILE="$1"
 POSTGRES_URL="postgresql://hafiz:password@localhost:5432/hafiz"
-S3_ENDPOINT="https://hafiz.local:9000"
+S3_ENDPOINT="http://localhost:9000"
 
 if [ -z "$IMPORT_FILE" ]; then
     echo "Usage: $0 <hafiz-export.tar>"
@@ -942,7 +1619,7 @@ psql "$POSTGRES_URL" -t -A -c "
 # Export changed objects
 while IFS='|' read -r bucket key; do
     mkdir -p "$EXPORT_DIR/objects/$bucket/$(dirname $key)"
-    aws --endpoint-url https://hafiz.local:9000 s3 cp \
+    aws --endpoint-url http://localhost:9000 s3 cp \
         "s3://$bucket/$key" \
         "$EXPORT_DIR/objects/$bucket/$key"
 done < "$EXPORT_DIR/metadata/changed_objects.txt"
@@ -1032,4 +1709,128 @@ ssh root@10.0.1.5 "sudo -u postgres psql -c 'SELECT pg_promote()'"
 # 4. Start secondary nodes if not running
 # 5. Verify service
 aws --endpoint-url https://hafiz-secondary.example.com s3 ls
+```
+
+---
+
+## Node Management API
+
+Hafiz provides REST APIs for managing cluster nodes programmatically.
+
+### Get Cluster Status
+
+```bash
+curl -X GET http://localhost:9000/api/v1/cluster/status \
+  -H "Authorization: Bearer <token>"
+```
+
+Response:
+```json
+{
+  "enabled": true,
+  "cluster_name": "production",
+  "local_node": {
+    "id": "node-1",
+    "name": "Node 1",
+    "endpoint": "http://192.168.1.10:9000",
+    "role": "primary",
+    "status": "healthy"
+  },
+  "stats": {
+    "total_nodes": 3,
+    "healthy_nodes": 3,
+    "total_objects": 15420,
+    "total_storage_bytes": 1073741824,
+    "pending_replications": 0,
+    "replication_lag_secs": 0
+  }
+}
+```
+
+### List Cluster Nodes
+
+```bash
+curl -X GET http://localhost:9000/api/v1/cluster/nodes \
+  -H "Authorization: Bearer <token>"
+```
+
+### Drain a Node (Maintenance Mode)
+
+Draining a node gracefully stops it from accepting new writes and completes pending replications:
+
+```bash
+curl -X POST http://localhost:9000/api/v1/cluster/nodes/<node-id>/drain \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"graceful": true, "timeout_secs": 300}'
+```
+
+Response:
+```json
+{
+  "status": "draining",
+  "node_id": "node-2",
+  "message": "Node drain initiated. The node will stop accepting writes and finish pending replications."
+}
+```
+
+### Remove a Node from Cluster
+
+Remove a node permanently from the cluster:
+
+```bash
+curl -X DELETE http://localhost:9000/api/v1/cluster/nodes/<node-id> \
+  -H "Authorization: Bearer <token>"
+```
+
+Response:
+```json
+{
+  "status": "removed",
+  "node_id": "node-2",
+  "message": "Node removed from cluster. Data rebalancing may be needed if the node held unique data."
+}
+```
+
+### Replication Statistics
+
+```bash
+curl -X GET http://localhost:9000/api/v1/cluster/replication/stats \
+  -H "Authorization: Bearer <token>"
+```
+
+Response:
+```json
+{
+  "events_processed": 15420,
+  "successful": 15418,
+  "failed": 2,
+  "pending": 0,
+  "in_progress": 0,
+  "bytes_replicated": 1073741824,
+  "avg_latency_ms": 12.5
+}
+```
+
+### Maintenance Workflow
+
+For planned maintenance on a node:
+
+```bash
+# 1. Drain the node (stop new writes, complete pending work)
+curl -X POST http://localhost:9000/api/v1/cluster/nodes/node-2/drain \
+  -H "Authorization: Bearer <token>" \
+  -d '{"graceful": true}'
+
+# 2. Wait for drain to complete (check status)
+curl -X GET http://localhost:9000/api/v1/cluster/nodes/node-2 \
+  -H "Authorization: Bearer <token>"
+# Check that status is "draining" or "drained"
+
+# 3. Perform maintenance on the node
+ssh root@node-2 "systemctl stop hafiz && dnf update -y && systemctl start hafiz"
+
+# 4. Verify node rejoins cluster
+curl -X GET http://localhost:9000/api/v1/cluster/nodes \
+  -H "Authorization: Bearer <token>"
 ```
