@@ -542,6 +542,23 @@
             to { stroke-dashoffset: -12; }
         }
 
+        /* Air-Gap Animation */
+        @keyframes moveRight {
+            0%, 100% { transform: translateX(0); opacity: 0.5; }
+            50% { transform: translateX(8px); opacity: 1; }
+        }
+
+        @keyframes usbPulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(124, 58, 237, 0.6);
+                transform: scale(1.02);
+            }
+        }
+
         /* Features Section */
         .features {
             padding: 120px 0;
@@ -1317,7 +1334,18 @@
                         </svg>
                     </div>
                     <h3>Multi-Cluster Sync</h3>
-                    <p>Real-time replication across data centers. Cross-network and air-gapped deployment support.</p>
+                    <p>Real-time replication across data centers with bidirectional or unidirectional sync modes.</p>
+                </div>
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon" style="background: rgba(124, 58, 237, 0.1);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #7c3aed;">
+                            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                            <line x1="1" y1="1" x2="23" y2="23" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <h3>Air-Gap Support</h3>
+                    <p>Offline data transfer for classified networks. USB/tape export-import with checksum verification.</p>
                 </div>
                 <div class="feature-card animate-on-scroll">
                     <div class="feature-icon">
@@ -1499,6 +1527,139 @@ docker run -d \
 aws --endpoint-url <span class="string">https://hafiz.local:9000</span> s3 mb s3://my-bucket
 aws --endpoint-url <span class="string">https://hafiz.local:9000</span> s3 cp file.txt s3://my-bucket/</pre>
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enterprise Air-Gap Section -->
+    <section class="architecture" id="enterprise" style="background: var(--bg-primary);">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <div class="section-label" style="color: #7c3aed;">Enterprise</div>
+                <h2 class="section-title">Air-Gapped Replication</h2>
+                <p class="section-description">
+                    Secure offline data transfer for classified networks, disaster recovery sites,
+                    and environments without network connectivity.
+                </p>
+            </div>
+            <div class="arch-content" style="margin-top: 48px;">
+                <div class="arch-visual animate-on-scroll">
+                    <div class="airgap-demo" style="position: relative; height: 350px; width: 100%;">
+                        <!-- Source Cluster -->
+                        <div style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 140px; text-align: center;">
+                            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; backdrop-filter: blur(10px);">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2" style="width: 40px; height: 40px; margin-bottom: 8px;">
+                                    <rect x="2" y="2" width="20" height="8" rx="2"/>
+                                    <rect x="2" y="14" width="20" height="8" rx="2"/>
+                                    <circle cx="6" cy="6" r="1" fill="#00d4aa"/>
+                                    <circle cx="6" cy="18" r="1" fill="#00d4aa"/>
+                                </svg>
+                                <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-primary);">Source Cluster</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">Read-Write</div>
+                            </div>
+                        </div>
+
+                        <!-- Export Arrow -->
+                        <div class="airgap-arrow" style="position: absolute; left: 155px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 60px; height: 2px; background: linear-gradient(90deg, #00d4aa, #7c3aed);"></div>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" style="width: 20px; height: 20px; animation: moveRight 2s ease-in-out infinite;">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+
+                        <!-- USB/Physical Media -->
+                        <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center;">
+                            <div style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(0, 212, 170, 0.2) 100%); border: 2px solid #7c3aed; border-radius: 16px; padding: 24px; animation: usbPulse 3s ease-in-out infinite;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" style="width: 48px; height: 48px; margin-bottom: 8px;">
+                                    <rect x="4" y="4" width="16" height="16" rx="2"/>
+                                    <path d="M9 9h6v6H9z"/>
+                                    <path d="M9 1v3M15 1v3M9 20v3M15 20v3"/>
+                                </svg>
+                                <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-primary);">Physical Media</div>
+                                <div style="font-size: 0.75rem; color: #7c3aed;">USB / Tape / Drive</div>
+                                <div style="margin-top: 8px; font-size: 0.7rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">SHA-256 ✓</div>
+                            </div>
+                        </div>
+
+                        <!-- Import Arrow -->
+                        <div class="airgap-arrow" style="position: absolute; right: 155px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 8px;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2" style="width: 20px; height: 20px; animation: moveRight 2s ease-in-out infinite 1s;">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                            <div style="width: 60px; height: 2px; background: linear-gradient(90deg, #7c3aed, #00d4aa);"></div>
+                        </div>
+
+                        <!-- Target Cluster -->
+                        <div style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 140px; text-align: center;">
+                            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; backdrop-filter: blur(10px);">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#00a8ff" stroke-width="2" style="width: 40px; height: 40px; margin-bottom: 8px;">
+                                    <rect x="2" y="2" width="20" height="8" rx="2"/>
+                                    <rect x="2" y="14" width="20" height="8" rx="2"/>
+                                    <circle cx="6" cy="6" r="1" fill="#00a8ff"/>
+                                    <circle cx="6" cy="18" r="1" fill="#00a8ff"/>
+                                </svg>
+                                <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-primary);">Air-Gap Cluster</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">Isolated Network</div>
+                            </div>
+                        </div>
+
+                        <!-- Air-Gap Label -->
+                        <div style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); background: rgba(124, 58, 237, 0.1); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 100px; padding: 6px 16px; font-size: 0.75rem; color: #7c3aed; font-weight: 500;">
+                            🔒 No Network Connection
+                        </div>
+                    </div>
+                </div>
+                <div class="arch-text animate-on-scroll">
+                    <h2>Secure Offline Sync</h2>
+                    <p>
+                        Transfer data to physically isolated networks without any network connectivity.
+                        Perfect for military, government, healthcare, and critical infrastructure.
+                    </p>
+                    <div class="arch-features">
+                        <div class="arch-feature">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span>Export to USB/tape media</span>
+                        </div>
+                        <div class="arch-feature">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span>SHA-256 checksum verification</span>
+                        </div>
+                        <div class="arch-feature">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span>Incremental sync support</span>
+                        </div>
+                        <div class="arch-feature">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span>Encrypted media support</span>
+                        </div>
+                        <div class="arch-feature">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span>Complete audit trail</span>
+                        </div>
+                        <div class="arch-feature">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span>Unidirectional replication</span>
+                        </div>
+                    </div>
+                    <a href="docs/deployment/cluster/#what-is-air-gap" class="btn-primary" style="margin-top: 24px;">
+                        Learn About Air-Gap
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </a>
                 </div>
             </div>
         </div>
