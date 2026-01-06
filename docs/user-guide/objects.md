@@ -13,13 +13,13 @@ Objects are the fundamental entities stored in Hafiz. Each object consists of da
 
     ```bash
     # Single file
-    aws --endpoint-url https://hafiz.local:9000 s3 cp file.txt s3://my-bucket/
+    aws --endpoint-url http://localhost:9000 s3 cp file.txt s3://my-bucket/
 
     # With specific key
-    aws --endpoint-url https://hafiz.local:9000 s3 cp file.txt s3://my-bucket/folder/renamed.txt
+    aws --endpoint-url http://localhost:9000 s3 cp file.txt s3://my-bucket/folder/renamed.txt
 
     # Directory (recursive)
-    aws --endpoint-url https://hafiz.local:9000 s3 cp ./data/ s3://my-bucket/data/ --recursive
+    aws --endpoint-url http://localhost:9000 s3 cp ./data/ s3://my-bucket/data/ --recursive
     ```
 
 === "Hafiz CLI"
@@ -43,7 +43,7 @@ Objects are the fundamental entities stored in Hafiz. Each object consists of da
 
 ```bash
 # AWS CLI
-aws --endpoint-url https://hafiz.local:9000 s3 cp s3://my-bucket/file.txt ./
+aws --endpoint-url http://localhost:9000 s3 cp s3://my-bucket/file.txt ./
 
 # Hafiz CLI
 hafiz cp s3://my-bucket/file.txt ./
@@ -103,7 +103,7 @@ s3://my-bucket/file.txt
 ### Custom Metadata
 
 ```bash
-aws --endpoint-url https://hafiz.local:9000 s3 cp file.txt s3://my-bucket/ \
+aws --endpoint-url http://localhost:9000 s3 cp file.txt s3://my-bucket/ \
     --metadata '{"author":"john","version":"1.0"}'
 ```
 
@@ -121,7 +121,7 @@ For files larger than 5GB, use multipart upload:
 
 ```bash
 # Automatic with AWS CLI
-aws --endpoint-url https://hafiz.local:9000 s3 cp large-file.zip s3://my-bucket/
+aws --endpoint-url http://localhost:9000 s3 cp large-file.zip s3://my-bucket/
 
 # Configure thresholds
 aws configure set s3.multipart_threshold 64MB

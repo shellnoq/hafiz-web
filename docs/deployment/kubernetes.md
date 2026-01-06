@@ -106,7 +106,7 @@ kubectl get svc -n hafiz
 kubectl port-forward svc/hafiz 9000:9000 -n hafiz
 
 # Test
-aws --endpoint-url https://hafiz.local:9000 s3 ls
+aws --endpoint-url http://localhost:9000 s3 ls
 ```
 
 ## Upgrade

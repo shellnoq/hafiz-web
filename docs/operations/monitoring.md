@@ -12,7 +12,7 @@ Hafiz exposes metrics at `/metrics` on the main S3 port (9000 by default).
 ### Access Metrics
 
 ```bash
-curl https://hafiz.local:9000/metrics
+curl http://localhost:9000/metrics
 ```
 
 ### Key Metrics
@@ -61,11 +61,11 @@ groups:
 
 ```bash
 # Health
-curl https://hafiz.local:9000/health
+curl http://localhost:9000/health
 
 # Readiness
-curl https://hafiz.local:9000/ready
+curl http://localhost:9000/ready
 
 # Liveness
-curl https://hafiz.local:9000/live
+curl http://localhost:9000/live
 ```

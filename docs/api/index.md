@@ -10,7 +10,7 @@ Hafiz implements the Amazon S3 REST API, providing compatibility with existing t
 ## Base URL
 
 ```
-https://hafiz.local:9000    # Development
+http://localhost:9000    # Development
 https://s3.example.com   # Production
 ```
 

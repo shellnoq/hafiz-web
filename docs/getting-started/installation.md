@@ -83,8 +83,8 @@ HAFIZ_ROOT_SECRET_KEY=password \
 hafiz-server --version
 
 # Check health endpoint
-curl https://hafiz.local:9000/health
+curl http://localhost:9000/health
 
 # Access Admin UI
-open https://hafiz.local:9000/admin
+open http://localhost:9000/admin
 ```

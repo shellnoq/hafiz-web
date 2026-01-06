@@ -29,9 +29,9 @@ docker run -d \
 
 Access points:
 
-- **S3 API**: https://hafiz.local:9000
-- **Admin UI**: https://hafiz.local:9000/admin
-- **Metrics**: https://hafiz.local:9000/metrics
+- **S3 API**: http://localhost:9000
+- **Admin UI**: http://localhost:9000/admin
+- **Metrics**: http://localhost:9000/metrics
 
 ## Docker Compose
 
@@ -73,7 +73,7 @@ This provides:
 - True distributed storage with consistent metadata across nodes
 
 Access points:
-- **S3 API (direct nodes)**: https://hafiz.local:9000, :9010, :9020
+- **S3 API (direct nodes)**: http://localhost:9000, :9010, :9020
 - **S3 API (load balanced)**: http://localhost:80
 - **HAProxy Stats**: http://localhost:8404/stats
 - **PostgreSQL**: localhost:5432
@@ -95,16 +95,16 @@ Access points:
 
 ```bash
 # Check metrics (confirms server is running)
-curl https://hafiz.local:9000/metrics
+curl http://localhost:9000/metrics
 
 # Test S3 API - list buckets
-curl https://hafiz.local:9000/
+curl http://localhost:9000/
 
 # Test with AWS CLI
-aws --endpoint-url https://hafiz.local:9000 s3 ls
+aws --endpoint-url http://localhost:9000 s3 ls
 
 # Access Admin UI
-open https://hafiz.local:9000/admin
+open http://localhost:9000/admin
 ```
 
 ## Troubleshooting

@@ -10,6 +10,7 @@ This guide covers deploying Hafiz across multiple physical servers with shared P
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
+- [Quick Start: Adding a Second Node (Native/Bare Metal)](#quick-start-adding-a-second-node-nativebare-metal)
 - [Quick Start: Dual Cluster with Docker Compose](#quick-start-dual-cluster-with-docker-compose)
 - [Single-Network Cluster](#step-1-postgresql-setup)
 - [Adding Servers to Existing Cluster](#adding-servers-to-existing-cluster)
@@ -45,6 +46,247 @@ This guide covers deploying Hafiz across multiple physical servers with shared P
                     │  192.168.1.5  │
                     └───────────────┘
 ```
+
+---
+
+## Quick Start: Adding a Second Node (Native/Bare Metal)
+
+This section covers the simplest cluster setup: adding a second Hafiz node to an existing primary node, using native binaries (no Docker) and SQLite for metadata.
+
+### Two-Node Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                       │
+│   ┌─────────────────┐                 ┌─────────────────┐           │
+│   │   Primary Node  │                 │  Secondary Node │           │
+│   │  (Read/Write)   │ ──Replication──▶│    (Replica)    │           │
+│   │                 │                 │                 │           │
+│   │ dev-hafiz.e2e.lab:9000           │ dev-hafiz-node1.e2e.lab:9000│
+│   │ SQLite (local)  │                 │ SQLite (local)  │           │
+│   └─────────────────┘                 └─────────────────┘           │
+│                                                                       │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Prerequisites
+
+- Primary Hafiz node already running
+- Secondary server with:
+  - Linux (Rocky Linux 8/9, RHEL 8/9, Ubuntu 20.04+)
+  - Network connectivity to primary node
+  - Port 9000 accessible (firewall opened)
+  - DNS A record pointing to the server (recommended)
+
+### Step 1: Copy the Binary to Secondary Node
+
+On the **primary node**, copy the hafiz-server binary:
+
+```bash
+# From primary node
+scp /opt/hafiz/target/release/hafiz-server user@secondary-node:/opt/hafiz/
+```
+
+Or on the **secondary node**, pull from primary:
+
+```bash
+# On secondary node
+mkdir -p /opt/hafiz
+scp user@primary-node:/opt/hafiz/target/release/hafiz-server /opt/hafiz/
+chmod +x /opt/hafiz/hafiz-server
+```
+
+### Step 2: Run the Setup Script
+
+Hafiz includes a setup script for secondary nodes:
+
+```bash
+# Download and customize the script
+curl -O https://raw.githubusercontent.com/shellnoq/hafiz/main/scripts/setup-node2.sh
+
+# Edit configuration variables at the top of the script
+vim setup-node2.sh
+
+# Run the script
+chmod +x setup-node2.sh
+sudo ./setup-node2.sh
+```
+
+The script will:
+1. Create required directories
+2. Generate the configuration file
+3. Create a systemd service
+4. Configure the firewall
+5. Optionally start the service
+
+### Step 3: Manual Setup (Alternative)
+
+If you prefer manual setup instead of using the script:
+
+#### 3a. Create Configuration File
+
+```bash
+mkdir -p /opt/hafiz/data
+
+cat > /opt/hafiz/data/hafiz.toml << 'EOF'
+[server]
+bind_address = "0.0.0.0"
+port = 9000
+admin_port = 9001
+workers = 0
+max_connections = 10000
+request_timeout_secs = 300
+
+[storage]
+data_dir = "/opt/hafiz/data"
+temp_dir = "/tmp/hafiz"
+max_object_size = 5497558138880
+
+[database]
+url = "sqlite:///opt/hafiz/data/hafiz.db?mode=rwc"
+max_connections = 100
+min_connections = 5
+
+[auth]
+enabled = true
+root_access_key = "minioadmin"
+root_secret_key = "minioadmin"
+
+[logging]
+level = "info"
+format = "pretty"
+
+[cluster]
+enabled = true
+name = "hafiz-cluster"
+advertise_endpoint = "http://your-secondary-node.example.com:9000"
+cluster_port = 9001
+seed_nodes = ["http://your-primary-node.example.com:9000"]
+heartbeat_interval_secs = 5
+node_timeout_secs = 30
+default_replication_mode = "async"
+default_replication_factor = 2
+cluster_tls_enabled = false
+EOF
+```
+
+#### 3b. Create Systemd Service
+
+```bash
+cat > /etc/systemd/system/hafiz.service << 'EOF'
+[Unit]
+Description=Hafiz S3 Storage Server
+After=network.target
+Documentation=https://github.com/shellnoq/hafiz
+
+[Service]
+Type=simple
+User=your-user
+Group=your-group
+Environment="HAFIZ_CONFIG_FILE=/opt/hafiz/data/hafiz.toml"
+ExecStart=/opt/hafiz/hafiz-server
+Restart=always
+RestartSec=5
+WorkingDirectory=/opt/hafiz
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+```
+
+#### 3c. Open Firewall Ports
+
+```bash
+sudo firewall-cmd --add-port=9000/tcp --permanent
+sudo firewall-cmd --add-port=9001/tcp --permanent
+sudo firewall-cmd --reload
+```
+
+#### 3d. Start the Service
+
+```bash
+sudo systemctl start hafiz
+sudo systemctl enable hafiz
+sudo systemctl status hafiz
+```
+
+### Step 4: Register Node with Primary Cluster
+
+After the secondary node is running, register it with the primary:
+
+```bash
+curl -X POST http://primary-node:9000/api/v1/cluster/nodes \
+  -H "Content-Type: application/json" \
+  -d '{
+    "endpoint": "http://secondary-node:9000",
+    "name": "secondary-node",
+    "role": "replica"
+  }'
+```
+
+### Step 5: Create Replication Rules
+
+Set up replication for your buckets:
+
+```bash
+# Create a replication rule for a bucket
+curl -X POST http://primary-node:9000/api/v1/cluster/replication/rules \
+  -H "Content-Type: application/json" \
+  -d '{
+    "source_bucket": "my-bucket",
+    "destination_endpoint": "http://secondary-node:9000",
+    "mode": "async"
+  }'
+```
+
+### Step 6: Verify Cluster and Replication
+
+```bash
+# Check cluster nodes
+curl -s http://primary-node:9000/api/v1/cluster/nodes | jq .
+
+# Check replication stats
+curl -s http://primary-node:9000/api/v1/cluster/replication/stats | jq .
+
+# Test replication - upload to primary
+curl -X PUT http://primary-node:9000/my-bucket/test.txt -d "Hello World"
+
+# Wait a moment, then verify on secondary
+curl http://secondary-node:9000/my-bucket/test.txt
+```
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Connection refused to secondary | Check firewall: `firewall-cmd --list-ports` |
+| Config parse error on start | Ensure all required fields in hafiz.toml (see example config) |
+| Permission denied on start | Check file ownership matches User in systemd service |
+| Replication not working | Ensure bucket exists on secondary: `curl -X PUT http://secondary:9000/bucket-name` |
+| Node not showing in cluster | Register manually via API (Step 4 above) |
+
+### Useful Commands
+
+```bash
+# View service logs
+sudo journalctl -u hafiz -f
+
+# Restart service
+sudo systemctl restart hafiz
+
+# Check if service is enabled for boot
+sudo systemctl is-enabled hafiz
+
+# Test connectivity from primary to secondary
+curl http://secondary-node:9000/
+
+# View cluster status
+curl http://primary-node:9000/api/v1/cluster/status | jq .
+```
+
+---
 
 ## Prerequisites
 

@@ -104,7 +104,9 @@ nav:
     - Overview: deployment/index.md
     - Docker: deployment/docker.md
     - Kubernetes: deployment/kubernetes.md
+    - Single-Node: deployment/single-node.md
     - Multi-Server Cluster: deployment/cluster.md
+    - TLS Configuration: deployment/tls.md
     - Production: deployment/production.md
   - Architecture:
     - Overview: architecture/index.md
@@ -115,6 +117,10 @@ nav:
     - Monitoring: operations/monitoring.md
     - Backup: operations/backup.md
     - Troubleshooting: operations/troubleshooting.md
+  - Integrations:
+    - Overview: integrations/index.md
+    - Nextcloud: integrations/nextcloud.md
+    - Rclone: integrations/rclone.md
   - Development:
     - Overview: development/index.md
     - Contributing: development/contributing.md

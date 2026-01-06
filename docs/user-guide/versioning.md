@@ -10,7 +10,7 @@ Versioning allows you to keep multiple versions of an object in the same bucket.
 ## Enabling Versioning
 
 ```bash
-aws --endpoint-url https://hafiz.local:9000 s3api put-bucket-versioning \
+aws --endpoint-url http://localhost:9000 s3api put-bucket-versioning \
     --bucket my-bucket \
     --versioning-configuration Status=Enabled
 ```
@@ -18,7 +18,7 @@ aws --endpoint-url https://hafiz.local:9000 s3api put-bucket-versioning \
 ## Check Versioning Status
 
 ```bash
-aws --endpoint-url https://hafiz.local:9000 s3api get-bucket-versioning \
+aws --endpoint-url http://localhost:9000 s3api get-bucket-versioning \
     --bucket my-bucket
 ```
 
@@ -38,14 +38,14 @@ graph TD
 ### List All Versions
 
 ```bash
-aws --endpoint-url https://hafiz.local:9000 s3api list-object-versions \
+aws --endpoint-url http://localhost:9000 s3api list-object-versions \
     --bucket my-bucket
 ```
 
 ### Get Specific Version
 
 ```bash
-aws --endpoint-url https://hafiz.local:9000 s3api get-object \
+aws --endpoint-url http://localhost:9000 s3api get-object \
     --bucket my-bucket \
     --key file.txt \
     --version-id "abc123" \
@@ -55,7 +55,7 @@ aws --endpoint-url https://hafiz.local:9000 s3api get-object \
 ### Delete Specific Version
 
 ```bash
-aws --endpoint-url https://hafiz.local:9000 s3api delete-object \
+aws --endpoint-url http://localhost:9000 s3api delete-object \
     --bucket my-bucket \
     --key file.txt \
     --version-id "abc123"
@@ -67,14 +67,14 @@ When you delete an object in a versioned bucket, Hafiz creates a **delete marker
 
 ```bash
 # This creates a delete marker
-aws --endpoint-url https://hafiz.local:9000 s3 rm s3://my-bucket/file.txt
+aws --endpoint-url http://localhost:9000 s3 rm s3://my-bucket/file.txt
 
 # The object appears deleted
-aws --endpoint-url https://hafiz.local:9000 s3 ls s3://my-bucket/file.txt
+aws --endpoint-url http://localhost:9000 s3 ls s3://my-bucket/file.txt
 # (no output)
 
 # But versions still exist
-aws --endpoint-url https://hafiz.local:9000 s3api list-object-versions \
+aws --endpoint-url http://localhost:9000 s3api list-object-versions \
     --bucket my-bucket --prefix file.txt
 # Shows all versions + delete marker
 ```
@@ -84,7 +84,7 @@ aws --endpoint-url https://hafiz.local:9000 s3api list-object-versions \
 Delete the delete marker to restore the object:
 
 ```bash
-aws --endpoint-url https://hafiz.local:9000 s3api delete-object \
+aws --endpoint-url http://localhost:9000 s3api delete-object \
     --bucket my-bucket \
     --key file.txt \
     --version-id "delete-marker-version-id"
@@ -93,7 +93,7 @@ aws --endpoint-url https://hafiz.local:9000 s3api delete-object \
 ## Suspending Versioning
 
 ```bash
-aws --endpoint-url https://hafiz.local:9000 s3api put-bucket-versioning \
+aws --endpoint-url http://localhost:9000 s3api put-bucket-versioning \
     --bucket my-bucket \
     --versioning-configuration Status=Suspended
 ```

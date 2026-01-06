@@ -26,10 +26,10 @@ HAFIZ_LOG_LEVEL=info        # trace, debug, info, warn, error
 
 Access points on the S3 port:
 
-- S3 API: `https://hafiz.local:9000`
-- Admin UI: `https://hafiz.local:9000/admin`
-- Metrics: `https://hafiz.local:9000/metrics`
-- Health: `https://hafiz.local:9000/health`
+- S3 API: `http://localhost:9000`
+- Admin UI: `http://localhost:9000/admin`
+- Metrics: `http://localhost:9000/metrics`
+- Health: `http://localhost:9000/health`
 
 ### Storage
 

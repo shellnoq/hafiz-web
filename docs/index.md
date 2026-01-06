@@ -14,15 +14,14 @@ description: Hafiz - Enterprise-grade S3-compatible object storage written in Ru
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.1-blue" alt="Version">
-  <img src="https://img.shields.io/badge/rust-1.85+-orange" alt="Rust">
-  <img src="https://img.shields.io/badge/license-Dual%20(AGPL%2FCommercial)-green" alt="License">
-  <img src="https://img.shields.io/badge/S3%20API-76%2B%20endpoints-blueviolet" alt="S3 API">
+  <a href="https://github.com/shellnoq/hafiz/actions"><img src="https://github.com/shellnoq/hafiz/workflows/CI/badge.svg" alt="CI Status"></a>
+  <a href="https://github.com/shellnoq/hafiz/releases"><img src="https://img.shields.io/github/v/release/shellnoq/hafiz" alt="Release"></a>
+  <a href="https://github.com/shellnoq/hafiz/blob/main/LICENSE"><img src="https://img.shields.io/github/license/shellnoq/hafiz" alt="License"></a>
 </p>
 
 ---
 
-**Hafiz** is a high-performance, S3-compatible object storage system. Built from the ground up in Rust for memory safety, performance, and reliability.
+**Hafiz** (حافظ - "Guardian" in Arabic/Turkish) is a high-performance, S3-compatible object storage system. Built from the ground up in Rust for memory safety, performance, and reliability.
 
 ## Why Hafiz?
 
@@ -76,9 +75,9 @@ description: Hafiz - Enterprise-grade S3-compatible object storage written in Ru
 
     Access:
 
-    - **S3 API**: https://hafiz.local:9000
-    - **Admin UI**: https://hafiz.local:9000/admin
-    - **File Browser**: https://hafiz.local:9000/browse
+    - **S3 API**: http://localhost:9000
+    - **Admin UI**: http://localhost:9000/admin
+    - **File Browser**: http://localhost:9000/browse
 
 === "Docker Compose"
 
@@ -166,8 +165,32 @@ description: Hafiz - Enterprise-grade S3-compatible object storage written in Ru
 | Object Lock | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | LDAP | :white_check_mark: | Enterprise | :x: |
 | Written in Rust | :white_check_mark: | :x: Go | :x: |
-| License | AGPL / Commercial | AGPL | N/A |
+| License | Apache 2.0 | AGPL | N/A |
 | Self-Hosted | :white_check_mark: | :white_check_mark: | :x: |
+
+## Integrations
+
+Hafiz works with any S3-compatible application:
+
+<div class="grid cards" markdown>
+
+-   :material-cloud:{ .lg .middle } __Nextcloud__
+
+    ---
+
+    Use Hafiz as external storage for Nextcloud.
+
+    [:octicons-arrow-right-24: Nextcloud Guide](integrations/nextcloud.md)
+
+-   :material-backup-restore:{ .lg .middle } __Backup Tools__
+
+    ---
+
+    rclone, Veeam, Duplicati, and more.
+
+    [:octicons-arrow-right-24: Integrations](integrations/index.md)
+
+</div>
 
 ## Getting Help
 
@@ -177,9 +200,4 @@ description: Hafiz - Enterprise-grade S3-compatible object storage written in Ru
 
 ## License
 
-Hafiz is available under a **Dual License** model:
-
-- **AGPL-3.0** - Free for open source projects and non-commercial use
-- **Commercial License** - For proprietary/commercial deployments without AGPL obligations
-
-[Contact us](mailto:info@e2esolutions.tech) for commercial licensing inquiries.
+Hafiz is open source under the [Apache License 2.0](https://github.com/shellnoq/hafiz/blob/main/LICENSE).

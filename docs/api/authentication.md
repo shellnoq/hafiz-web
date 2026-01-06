@@ -39,7 +39,7 @@ SDKs handle signing automatically:
     import boto3
 
     s3 = boto3.client('s3',
-        endpoint_url='https://hafiz.local:9000',
+        endpoint_url='http://localhost:9000',
         aws_access_key_id='YOUR_ACCESS_KEY',
         aws_secret_access_key='YOUR_SECRET_KEY',
         region_name='us-east-1'
@@ -52,7 +52,7 @@ SDKs handle signing automatically:
     import { S3Client } from "@aws-sdk/client-s3";
 
     const client = new S3Client({
-      endpoint: "https://hafiz.local:9000",
+      endpoint: "http://localhost:9000",
       region: "us-east-1",
       credentials: {
         accessKeyId: "YOUR_ACCESS_KEY",
@@ -76,13 +76,13 @@ Generate time-limited URLs that don't require credentials:
 
 ```bash
 # Generate presigned URL (valid 1 hour)
-aws --endpoint-url https://hafiz.local:9000 s3 presign \
+aws --endpoint-url http://localhost:9000 s3 presign \
     s3://my-bucket/file.txt --expires-in 3600
 ```
 
 Result:
 ```
-https://hafiz.local:9000/my-bucket/file.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=...
+http://localhost:9000/my-bucket/file.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=...
 ```
 
 ## Signature V2 (Legacy)

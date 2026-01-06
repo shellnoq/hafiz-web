@@ -9,6 +9,14 @@ Choose the deployment method that fits your needs.
 
 <div class="grid cards" markdown>
 
+-   :material-server:{ .lg .middle } __Single Node__
+
+    ---
+
+    Simple deployment for small-scale use.
+
+    [:octicons-arrow-right-24: Single Node Guide](single-node.md)
+
 -   :material-docker:{ .lg .middle } __Docker__
 
     ---
@@ -25,14 +33,6 @@ Choose the deployment method that fits your needs.
 
     [:octicons-arrow-right-24: Kubernetes Guide](kubernetes.md)
 
--   :material-rocket-launch:{ .lg .middle } __Production__
-
-    ---
-
-    Best practices for production.
-
-    [:octicons-arrow-right-24: Production Guide](production.md)
-
 -   :material-server-network:{ .lg .middle } __Multi-Server Cluster__
 
     ---
@@ -41,17 +41,34 @@ Choose the deployment method that fits your needs.
 
     [:octicons-arrow-right-24: Cluster Guide](cluster.md)
 
+-   :material-lock:{ .lg .middle } __TLS/HTTPS__
+
+    ---
+
+    Secure communication with TLS certificates.
+
+    [:octicons-arrow-right-24: TLS Guide](tls.md)
+
+-   :material-rocket-launch:{ .lg .middle } __Production__
+
+    ---
+
+    Best practices for production.
+
+    [:octicons-arrow-right-24: Production Guide](production.md)
+
 </div>
 
 ## Quick Comparison
 
 | Method | Use Case | Complexity |
 |--------|----------|------------|
-| Docker | Development | ⭐ Easy |
-| Docker Compose | Testing | ⭐⭐ Medium |
-| Multi-Server Cluster | Enterprise | ⭐⭐⭐ Advanced |
-| Kubernetes | Cloud Native | ⭐⭐⭐ Advanced |
-| Binary | Bare metal | ⭐⭐ Medium |
+| Single Node | Development, Small production | ⭐ Easy |
+| Docker | Quick testing, Development | ⭐ Easy |
+| Docker Compose | Multi-container testing | ⭐⭐ Medium |
+| Multi-Server Cluster | Enterprise, High availability | ⭐⭐⭐ Advanced |
+| Kubernetes | Cloud Native, Auto-scaling | ⭐⭐⭐ Advanced |
+| TLS/HTTPS | Production security | ⭐⭐ Medium |
 
 ## Minimum Requirements
 
@@ -76,5 +93,5 @@ docker run -d \
 
 Access:
 
-- **S3 API:** https://hafiz.local:9000
+- **S3 API:** http://localhost:9000
 - **Admin UI:** http://localhost:9001

@@ -34,9 +34,9 @@ docker run -d \
 
 That's it! Hafiz is now running:
 
-- **S3 API**: https://hafiz.local:9000
-- **Admin UI**: https://hafiz.local:9000/admin
-- **Metrics**: https://hafiz.local:9000/metrics
+- **S3 API**: http://localhost:9000
+- **Admin UI**: http://localhost:9000/admin
+- **Metrics**: http://localhost:9000/metrics
 
 ## Verify Installation
 
@@ -48,14 +48,14 @@ aws configure set aws_access_key_id hafizadmin
 aws configure set aws_secret_access_key hafizadmin
 
 # Create bucket
-aws --endpoint-url https://hafiz.local:9000 s3 mb s3://my-bucket
+aws --endpoint-url http://localhost:9000 s3 mb s3://my-bucket
 
 # Upload file
 echo "Hello, Hafiz!" > test.txt
-aws --endpoint-url https://hafiz.local:9000 s3 cp test.txt s3://my-bucket/
+aws --endpoint-url http://localhost:9000 s3 cp test.txt s3://my-bucket/
 
 # List objects
-aws --endpoint-url https://hafiz.local:9000 s3 ls s3://my-bucket/
+aws --endpoint-url http://localhost:9000 s3 ls s3://my-bucket/
 ```
 
 ### Using Python
@@ -65,7 +65,7 @@ import boto3
 
 s3 = boto3.client(
     's3',
-    endpoint_url='https://hafiz.local:9000',
+    endpoint_url='http://localhost:9000',
     aws_access_key_id='hafizadmin',
     aws_secret_access_key='hafizadmin'
 )
@@ -89,7 +89,7 @@ cargo install hafiz-cli
 
 # Configure
 hafiz configure
-# Endpoint: https://hafiz.local:9000
+# Endpoint: http://localhost:9000
 # Access Key: hafizadmin
 # Secret Key: hafizadmin
 

@@ -27,7 +27,7 @@ HAFIZ_ENCRYPTION_MASTER_KEY=$(openssl rand -base64 32)
 ### Per-Object Encryption
 
 ```bash
-aws --endpoint-url https://hafiz.local:9000 s3 cp file.txt s3://my-bucket/ \
+aws --endpoint-url http://localhost:9000 s3 cp file.txt s3://my-bucket/ \
     --sse AES256
 ```
 
@@ -39,12 +39,12 @@ KEY=$(openssl rand -base64 32)
 KEY_MD5=$(echo -n "$KEY" | openssl dgst -md5 -binary | base64)
 
 # Upload with SSE-C
-aws --endpoint-url https://hafiz.local:9000 s3 cp file.txt s3://my-bucket/ \
+aws --endpoint-url http://localhost:9000 s3 cp file.txt s3://my-bucket/ \
     --sse-c AES256 \
     --sse-c-key "$KEY"
 
 # Download (must provide same key)
-aws --endpoint-url https://hafiz.local:9000 s3 cp s3://my-bucket/file.txt . \
+aws --endpoint-url http://localhost:9000 s3 cp s3://my-bucket/file.txt . \
     --sse-c AES256 \
     --sse-c-key "$KEY"
 ```
@@ -74,7 +74,7 @@ Data Encryption Key (per object)
 Set default encryption for all new objects:
 
 ```bash
-aws --endpoint-url https://hafiz.local:9000 s3api put-bucket-encryption \
+aws --endpoint-url http://localhost:9000 s3api put-bucket-encryption \
     --bucket my-bucket \
     --server-side-encryption-configuration '{
       "Rules": [{
@@ -89,7 +89,7 @@ aws --endpoint-url https://hafiz.local:9000 s3api put-bucket-encryption \
 
 ```bash
 # Check object encryption
-aws --endpoint-url https://hafiz.local:9000 s3api head-object \
+aws --endpoint-url http://localhost:9000 s3api head-object \
     --bucket my-bucket \
     --key file.txt
 

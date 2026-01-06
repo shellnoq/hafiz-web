@@ -5,95 +5,66 @@ description: Version history
 
 # Changelog
 
-All notable changes to Hafiz will be documented here.
+## [0.2.0] - 2025-01-01
 
-## [1.0.1] - 2026-01-02
+### Added
 
-### Enterprise Enhancements
+- **Cluster Management**
+  - Node drain API for graceful maintenance
+  - Node removal from cluster
+  - Real-time system stats collection (CPU, memory, disk)
+  - Cluster stats computation from metadata
 
-#### IAM-Style User Bucket Access Policies
-- Added `BucketPermission` enum with Read, Write, ReadWrite, None levels
-- User-level bucket access control via Admin API
-- Pattern-based bucket matching for wildcard permissions
-- Service account support for application integrations
+- **IAM Policy Conditions**
+  - Full condition evaluation in bucket policies
+  - String operators: StringEquals, StringNotEquals, StringLike, etc.
+  - Numeric operators: NumericEquals, NumericLessThan, etc.
+  - IP Address operators with CIDR notation support
+  - Date operators: DateEquals, DateLessThan, etc.
+  - Bool and Null condition operators
 
-#### Unidirectional Replication
-- Added `ReplicationDirection` for one-way sync (Primary → Replica)
-- Support for read-only replica sites
-- Disaster recovery with automatic failover procedures
-- Replication service accounts with write-only access
+- **Cluster Transport**
+  - Delete API for object replication
+  - Custom CA certificate support for TLS
+  - Client certificate authentication
 
-#### Air-Gap Documentation
-- Comprehensive air-gap deployment guide
-- Export/import scripts for offline data transfer
-- Checksum verification at every level
-- Incremental sync support for ongoing transfers
+### Improved
 
-#### Admin Panel Improvements
-- Enhanced sidebar navigation with visible active state
-- Browse Objects button on bucket cards
-- User description field in user management
-- Professional enterprise theme styling
+- Admin stats now show server-level encryption status
+- Cluster heartbeat includes real node statistics
+- Replication delete operations with progress tracking
 
-#### Error Handling
-- Comprehensive error code system with 50+ error types
-- Internationalization support (EN/TR)
-- S3-compatible error responses
-- Detailed error messages for debugging
+### Technical
 
-### Technical Details
-- New types: `BucketPermission`, `BucketAccess`, `ReplicationDirection`
-- API endpoint: `PUT /admin/users/:access_key/buckets`
-- Full backwards compatibility maintained
+- 36,000+ lines of Rust
+- Enhanced cluster replication protocol
+- Cross-platform stats collection (Linux optimized)
 
-[1.0.1]: https://github.com/shellnoq/hafiz/releases/tag/v1.0.1
+[0.2.0]: https://github.com/shellnoq/hafiz/releases/tag/v0.2.0
 
----
+## [0.1.0] - 2024-12-08
 
-## [1.0.0] - 2025-12-15
-
-### Production Ready Release
-
-Hafiz is now production-ready for enterprise deployments.
-
-### Core Features
+### Added
 
 - Full S3 API compatibility (76+ endpoints)
-- Multi-part uploads with resumable support
-- Object versioning with delete markers
-- Lifecycle policies with automatic expiration
+- Multi-part uploads
+- Object versioning
+- Lifecycle policies
 - Server-side encryption (AES-256-GCM)
-- Object Lock (WORM) for compliance
-- Bucket policies with IAM-style access control
-- LDAP/Active Directory integration
-- Admin API & Web UI
-- Web File Browser
-- Prometheus metrics & Grafana dashboards
-- Event notifications (webhooks)
-- Multi-server cluster mode
-- Cross-network replication
-- Air-gapped system support
-- Helm chart for Kubernetes
-- CLI tool (hafiz-cli)
-- Erasure coding for data durability
-- Tiered storage (hot/warm/cold)
-- Data deduplication
-- Compression support
+- Object Lock (WORM)
+- Bucket policies
+- LDAP integration
+- Admin API & UI
+- Prometheus metrics
+- Event notifications
+- Cluster mode
+- Helm chart
+- CLI tool
 
-### Technical Highlights
+### Technical
 
 - 33,000+ lines of Rust
-- 9 modular crates
+- 9 crates
 - PostgreSQL & SQLite support
-- Async I/O with Tokio
-- Zero-copy streaming where possible
-- Memory-safe by design
 
-### Deployment Options
-
-- Docker & Docker Compose
-- Kubernetes with Helm
-- Multi-server cluster
-- Air-gapped environments
-
-[1.0.0]: https://github.com/shellnoq/hafiz/releases/tag/v1.0.0
+[0.1.0]: https://github.com/shellnoq/hafiz/releases/tag/v0.1.0
