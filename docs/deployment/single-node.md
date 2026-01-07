@@ -180,8 +180,8 @@ min_connections = 5
 
 [auth]
 enabled = true
-root_access_key = "minioadmin"
-root_secret_key = "minioadmin"
+root_access_key = "hafizadmin"
+root_secret_key = "hafizadmin"
 
 [logging]
 level = "info"
@@ -217,8 +217,8 @@ docker run -d \
   --restart unless-stopped \
   -p 9000:9000 \
   -v /opt/hafiz/data:/data \
-  -e HAFIZ_ROOT_ACCESS_KEY=minioadmin \
-  -e HAFIZ_ROOT_SECRET_KEY=minioadmin \
+  -e HAFIZ_ROOT_ACCESS_KEY=hafizadmin \
+  -e HAFIZ_ROOT_SECRET_KEY=hafizadmin \
   ghcr.io/shellnoq/hafiz:latest
 ```
 
@@ -242,8 +242,8 @@ services:
     environment:
       - HAFIZ_DATA_DIR=/data
       - HAFIZ_DATABASE_URL=sqlite:///data/hafiz.db?mode=rwc
-      - HAFIZ_ROOT_ACCESS_KEY=minioadmin
-      - HAFIZ_ROOT_SECRET_KEY=minioadmin
+      - HAFIZ_ROOT_ACCESS_KEY=hafizadmin
+      - HAFIZ_ROOT_SECRET_KEY=hafizadmin
       - HAFIZ_LOG_LEVEL=info
       # Uncomment for HTTPS:
       # - HAFIZ_TLS_CERT=/certs/server.crt
@@ -329,8 +329,8 @@ sudo journalctl -u hafiz -f
 |----------|---------|-------------|
 | `HAFIZ_DATA_DIR` | `/data` | Data storage directory |
 | `HAFIZ_DATABASE_URL` | SQLite | Database connection string |
-| `HAFIZ_ROOT_ACCESS_KEY` | `minioadmin` | Root user access key |
-| `HAFIZ_ROOT_SECRET_KEY` | `minioadmin` | Root user secret key |
+| `HAFIZ_ROOT_ACCESS_KEY` | `hafizadmin` | Root user access key |
+| `HAFIZ_ROOT_SECRET_KEY` | `hafizadmin` | Root user secret key |
 | `HAFIZ_PORT` | `9000` | S3 API port |
 | `HAFIZ_LOG_LEVEL` | `info` | Log level (trace/debug/info/warn/error) |
 | `HAFIZ_TLS_CERT` | - | TLS certificate path |
@@ -461,8 +461,8 @@ curl http://localhost:9000/test-bucket
 ```bash
 # Configure profile
 aws configure --profile hafiz
-# Access Key ID: minioadmin
-# Secret Access Key: minioadmin
+# Access Key ID: hafizadmin
+# Secret Access Key: hafizadmin
 # Default region: us-east-1
 # Output format: json
 
@@ -475,8 +475,8 @@ aws --endpoint-url http://localhost:9000 --profile hafiz s3 cp file.txt s3://my-
 ### Environment Variables
 
 ```bash
-export AWS_ACCESS_KEY_ID=minioadmin
-export AWS_SECRET_ACCESS_KEY=minioadmin
+export AWS_ACCESS_KEY_ID=hafizadmin
+export AWS_SECRET_ACCESS_KEY=hafizadmin
 export AWS_ENDPOINT_URL=http://localhost:9000
 
 # Now use aws commands without --endpoint-url
@@ -491,8 +491,8 @@ import boto3
 s3 = boto3.client(
     's3',
     endpoint_url='http://localhost:9000',
-    aws_access_key_id='minioadmin',
-    aws_secret_access_key='minioadmin'
+    aws_access_key_id='hafizadmin',
+    aws_secret_access_key='hafizadmin'
 )
 
 # Create bucket

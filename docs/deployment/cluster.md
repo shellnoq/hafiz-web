@@ -149,8 +149,8 @@ min_connections = 5
 
 [auth]
 enabled = true
-root_access_key = "minioadmin"
-root_secret_key = "minioadmin"
+root_access_key = "hafizadmin"
+root_secret_key = "hafizadmin"
 
 [logging]
 level = "info"

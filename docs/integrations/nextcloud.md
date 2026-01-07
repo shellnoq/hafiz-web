@@ -80,8 +80,8 @@ sudo -u www-data php /var/www/nextcloud/occ app:enable files_external
 | - Region** | Region code | `us-east-1` |
 | - Enable SSL** | Check if using HTTPS | |
 | - Enable Path Style** | **Must be checked** | |
-| **Access key** | Your Hafiz access key | `minioadmin` |
-| **Secret key** | Your Hafiz secret key | `minioadmin` |
+| **Access key** | Your Hafiz access key | `hafizadmin` |
+| **Secret key** | Your Hafiz secret key | `hafizadmin` |
 | **Available for** | Users/groups | All users or specific |
 
 **Important**: Always enable **"Enable Path Style"** as Hafiz uses path-style URLs.
@@ -182,7 +182,7 @@ Via Admin Panel or API:
 ```bash
 # Create user with specific bucket access
 curl -X POST https://hafiz.example.com:9000/api/v1/users \
-  -H "Authorization: Basic $(echo -n 'minioadmin:minioadmin' | base64)" \
+  -H "Authorization: Basic $(echo -n 'hafizadmin:hafizadmin' | base64)" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "sales-dept",
@@ -275,8 +275,8 @@ For large files, Nextcloud uses multipart upload. Hafiz handles this automatical
 # setup-nextcloud-hafiz.sh
 
 HAFIZ_ENDPOINT="https://hafiz.example.com:9000"
-HAFIZ_ACCESS_KEY="minioadmin"
-HAFIZ_SECRET_KEY="minioadmin"
+HAFIZ_ACCESS_KEY="hafizadmin"
+HAFIZ_SECRET_KEY="hafizadmin"
 BUCKET_NAME="nextcloud-storage"
 
 # 1. Create bucket

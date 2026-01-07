@@ -400,8 +400,8 @@ import boto3
 s3 = boto3.client(
     's3',
     endpoint_url='https://hafiz.example.com:9000',
-    aws_access_key_id='minioadmin',
-    aws_secret_access_key='minioadmin',
+    aws_access_key_id='hafizadmin',
+    aws_secret_access_key='hafizadmin',
     verify='/opt/hafiz/certs/ca.crt'  # Path to CA cert
 )
 
@@ -409,8 +409,8 @@ s3 = boto3.client(
 s3 = boto3.client(
     's3',
     endpoint_url='https://localhost:9000',
-    aws_access_key_id='minioadmin',
-    aws_secret_access_key='minioadmin',
+    aws_access_key_id='hafizadmin',
+    aws_secret_access_key='hafizadmin',
     verify=False
 )
 ```
@@ -432,8 +432,8 @@ curl -k https://localhost:9000/health
 type = s3
 provider = Other
 endpoint = https://hafiz.example.com:9000
-access_key_id = minioadmin
-secret_access_key = minioadmin
+access_key_id = hafizadmin
+secret_access_key = hafizadmin
 # For self-signed certificates, add:
 # no_check_certificate = true
 ```

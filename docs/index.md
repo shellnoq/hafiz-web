@@ -159,14 +159,14 @@ description: Hafiz - Enterprise-grade S3-compatible object storage written in Ru
 
 ## Comparison
 
-| Feature | Hafiz | MinIO | AWS S3 |
-|---------|-------|-------|--------|
-| S3 Compatible | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Object Lock | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| LDAP | :white_check_mark: | Enterprise | :x: |
-| Written in Rust | :white_check_mark: | :x: Go | :x: |
-| License | Apache 2.0 | AGPL | N/A |
-| Self-Hosted | :white_check_mark: | :white_check_mark: | :x: |
+| Feature | Hafiz | AWS S3 |
+|---------|-------|--------|
+| S3 Compatible | :white_check_mark: | :white_check_mark: |
+| Object Lock | :white_check_mark: | :white_check_mark: |
+| LDAP | :white_check_mark: | :x: |
+| Written in Rust | :white_check_mark: | :x: |
+| License | Apache 2.0 | N/A |
+| Self-Hosted | :white_check_mark: | :x: |
 
 ## Integrations
 
