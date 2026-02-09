@@ -439,18 +439,58 @@ Open in browser:
 ### S3 API Test
 
 ```bash
+# Configure credentials
+export AWS_ACCESS_KEY_ID=hafizadmin
+export AWS_SECRET_ACCESS_KEY=hafizadmin
+export AWS_DEFAULT_REGION=us-east-1
+
 # Create bucket
-curl -X PUT http://localhost:9000/test-bucket
+aws --endpoint-url http://localhost:9000 s3 mb s3://test-bucket
 
-# Upload object
-echo "Hello World" | curl -X PUT -T - http://localhost:9000/test-bucket/hello.txt
+# Upload file
+echo "Hello Hafiz!" > /tmp/test.txt
+aws --endpoint-url http://localhost:9000 s3 cp /tmp/test.txt s3://test-bucket/hello.txt
 
-# Download object
-curl http://localhost:9000/test-bucket/hello.txt
+# Download file
+aws --endpoint-url http://localhost:9000 s3 cp s3://test-bucket/hello.txt -
 
 # List objects
-curl http://localhost:9000/test-bucket
+aws --endpoint-url http://localhost:9000 s3 ls s3://test-bucket/
+
+# Cleanup
+aws --endpoint-url http://localhost:9000 s3 rb s3://test-bucket --force
 ```
+
+### Full Test Suite (52 tests)
+
+Hafiz includes a comprehensive S3 API test suite that validates all supported operations. The test script is located at `deploy/distributed/tests/run-tests.sh`.
+
+To run against a single-node instance, set the endpoint and credentials:
+
+```bash
+export AWS_ACCESS_KEY_ID=hafizadmin
+export AWS_SECRET_ACCESS_KEY=hafizadmin
+export AWS_DEFAULT_REGION=us-east-1
+
+# Edit endpoint in the script or run with custom endpoint:
+EP="--endpoint-url http://localhost:9000"
+bash deploy/distributed/tests/run-tests.sh
+```
+
+The test suite covers:
+
+| Category | Tests |
+|----------|-------|
+| Bucket operations | Create, list, head, delete |
+| Object operations | Put, get, head, copy, delete, metadata, subfolder |
+| Multipart upload | 10MB upload, API-level create/upload/complete/abort |
+| Versioning | Enable, put versions, get latest, list versions |
+| Bucket/Object tagging | Put, get, delete |
+| Lifecycle | Put, get, delete |
+| CORS | Put, get, delete |
+| SSE-C encryption | Put and get with customer key |
+
+**Verified: 52/52 PASS** on single-node with SQLite backend.
 
 ---
 
@@ -659,6 +699,17 @@ sudo ufw status                  # Ubuntu
 ```
 
 ---
+
+## Scaling to Multi-Node Cluster
+
+When you outgrow a single node, Hafiz supports scaling to a multi-node cluster with:
+
+- **Shared PostgreSQL** for consistent metadata across all nodes
+- **Native async object replication** for data redundancy (no external tools needed)
+- **HAProxy load balancing** with source-based consistent hashing
+- **Automatic replication** of all objects to all healthy nodes
+
+See [Multi-Server Cluster Deployment](./cluster.md) for details. The same 52 S3 API tests pass on both single-node and cluster deployments, plus an additional 29 replication tests verify cross-node data consistency.
 
 ## Next Steps
 

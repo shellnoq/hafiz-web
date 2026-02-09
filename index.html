@@ -559,6 +559,194 @@
             }
         }
 
+        /* Unique Features Section */
+        .unique-features {
+            padding: 120px 0;
+            position: relative;
+            background: var(--bg-secondary);
+        }
+
+        .unique-features::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+        }
+
+        .unique-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 64px;
+        }
+
+        .unique-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 36px 28px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .unique-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent-gradient);
+        }
+
+        .unique-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 60px rgba(0, 212, 170, 0.15);
+        }
+
+        .unique-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: rgba(0, 212, 170, 0.15);
+            border: 1px solid rgba(0, 212, 170, 0.3);
+            border-radius: 100px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 16px;
+        }
+
+        .unique-card .feature-icon {
+            width: 56px;
+            height: 56px;
+            margin-bottom: 20px;
+        }
+
+        .unique-card .feature-icon svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .unique-card h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .unique-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        /* Comparison Table */
+        .comparison-section {
+            margin-top: 0;
+        }
+
+        .comparison-table-wrapper {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th {
+            padding: 20px 24px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+        }
+
+        .comparison-table th:first-child {
+            width: 40%;
+        }
+
+        .comparison-table th:not(:first-child) {
+            text-align: center;
+            width: 20%;
+        }
+
+        .comparison-table th.hafiz-col {
+            color: var(--accent-primary);
+            position: relative;
+        }
+
+        .comparison-table td {
+            padding: 14px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .comparison-table td:not(:first-child) {
+            text-align: center;
+        }
+
+        .comparison-table tr:hover {
+            background: rgba(0, 212, 170, 0.03);
+        }
+
+        .comparison-table .check {
+            color: var(--accent-primary);
+            font-size: 1.2rem;
+        }
+
+        .comparison-table .cross {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+        }
+
+        .comparison-table .hafiz-check {
+            color: var(--accent-primary);
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+
+        .comparison-table .highlight-row {
+            background: rgba(0, 212, 170, 0.05);
+        }
+
+        .comparison-table .highlight-row td:first-child {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        @media (max-width: 1024px) {
+            .unique-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .unique-grid {
+                grid-template-columns: 1fr;
+            }
+            .comparison-table th,
+            .comparison-table td {
+                padding: 10px 12px;
+                font-size: 0.8rem;
+            }
+        }
+
         /* Features Section */
         .features {
             padding: 120px 0;
@@ -1169,7 +1357,7 @@
                 <div class="hero-text">
                     <div class="badge">
                         <span class="badge-dot"></span>
-                        Open Source & Enterprise Ready
+                        v0.3.0 Released — Open Source & Enterprise Ready
                     </div>
                     <h1>The Guardian of<br>Your <span>Object Storage</span></h1>
                     <p class="hero-description">
@@ -1192,15 +1380,15 @@
                     </div>
                     <div class="hero-stats">
                         <div class="stat">
-                            <div class="stat-value">33K+</div>
+                            <div class="stat-value">40K+</div>
                             <div class="stat-label">Lines of Rust</div>
                         </div>
                         <div class="stat">
-                            <div class="stat-value">76+</div>
+                            <div class="stat-value">90+</div>
                             <div class="stat-label">S3 API Endpoints</div>
                         </div>
                         <div class="stat">
-                            <div class="stat-value">9</div>
+                            <div class="stat-value">10</div>
                             <div class="stat-label">Rust Crates</div>
                         </div>
                     </div>
@@ -1286,14 +1474,203 @@
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features" id="features">
+    <!-- Only in Hafiz Section -->
+    <section class="unique-features" id="features">
         <div class="container">
             <div class="section-header animate-on-scroll">
-                <div class="section-label">Features</div>
-                <h2 class="section-title">Built for Enterprise</h2>
+                <div class="section-label" style="color: var(--accent-primary);">Only in Hafiz</div>
+                <h2 class="section-title">Features You Won't Find<br>in Other Object Stores</h2>
                 <p class="section-description">
-                    Everything you need for modern object storage, with the security
+                    Go beyond basic S3 compatibility. These advanced capabilities set Hafiz apart
+                    from MinIO, Ceph, and even AWS S3 itself.
+                </p>
+            </div>
+            <div class="unique-grid">
+                <div class="unique-card animate-on-scroll">
+                    <span class="unique-badge">Exclusive</span>
+                    <div class="feature-icon" style="background: rgba(0, 212, 170, 0.12);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-primary);">
+                            <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
+                            <rect x="8" y="2" width="8" height="4" rx="1"/>
+                            <path d="M8 12h8M8 16h5M8 20h3"/>
+                        </svg>
+                    </div>
+                    <h3>Immutable Audit Log</h3>
+                    <p>Blockchain-style hash chain for every operation. Each entry cryptographically links to the previous — detect tampering instantly with chain verification.</p>
+                </div>
+                <div class="unique-card animate-on-scroll">
+                    <span class="unique-badge">Exclusive</span>
+                    <div class="feature-icon" style="background: rgba(0, 168, 255, 0.12);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-secondary);">
+                            <rect x="2" y="7" width="20" height="14" rx="2"/>
+                            <rect x="4" y="3" width="16" height="14" rx="2"/>
+                            <path d="M12 11v4M10 13h4"/>
+                        </svg>
+                    </div>
+                    <h3>Data Deduplication</h3>
+                    <p>SHA-256 content-addressable storage with automatic reference counting. Identical files across any bucket share a single copy — save up to 90% storage.</p>
+                </div>
+                <div class="unique-card animate-on-scroll">
+                    <span class="unique-badge">Exclusive</span>
+                    <div class="feature-icon" style="background: rgba(124, 58, 237, 0.12);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #7c3aed;">
+                            <path d="M21 8V5a2 2 0 00-2-2H5a2 2 0 00-2 2v3"/>
+                            <path d="M21 16v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3"/>
+                            <path d="M4 12h16M9 8l-3 4 3 4M15 8l3 4-3 4"/>
+                        </svg>
+                    </div>
+                    <h3>Smart Compression</h3>
+                    <p>Automatic zstd compression on write, transparent decompression on read. Skips already-compressed formats like images, video, and archives.</p>
+                </div>
+                <div class="unique-card animate-on-scroll">
+                    <span class="unique-badge">Exclusive</span>
+                    <div class="feature-icon" style="background: rgba(0, 212, 170, 0.12);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-primary);">
+                            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+                        </svg>
+                    </div>
+                    <h3>Temporary Bucket Sharing</h3>
+                    <p>Generate time-limited access tokens for any bucket — no S3 credentials needed. Set read/write/list permissions, expiration, and download limits.</p>
+                </div>
+                <div class="unique-card animate-on-scroll">
+                    <span class="unique-badge">Exclusive</span>
+                    <div class="feature-icon" style="background: rgba(0, 168, 255, 0.12);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-secondary);">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <path d="M3 9h18M9 3v18"/>
+                            <circle cx="14" cy="14" r="2"/>
+                        </svg>
+                    </div>
+                    <h3>Object Transform Pipeline</h3>
+                    <p>Auto-generate thumbnails, strip EXIF metadata, and convert image formats on upload. Async processing — zero impact on upload latency.</p>
+                </div>
+                <div class="unique-card animate-on-scroll">
+                    <span class="unique-badge">Exclusive</span>
+                    <div class="feature-icon" style="background: rgba(124, 58, 237, 0.12);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #7c3aed;">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                        </svg>
+                    </div>
+                    <h3>Real-Time Change Stream</h3>
+                    <p>Subscribe to object changes via Server-Sent Events. Get instant notifications for creates and deletes — per-bucket or global channels.</p>
+                </div>
+            </div>
+
+            <!-- Comparison Table -->
+            <div class="comparison-section animate-on-scroll">
+                <div class="section-header" style="margin-bottom: 32px;">
+                    <h2 class="section-title" style="font-size: 2.2rem;">How Hafiz Compares</h2>
+                </div>
+                <div class="comparison-table-wrapper">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th class="hafiz-col">Hafiz</th>
+                                <th>AWS S3</th>
+                                <th>MinIO</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>S3 API Compatible</td>
+                                <td><span class="hafiz-check">&#10003;</span></td>
+                                <td><span class="check">&#10003;</span></td>
+                                <td><span class="check">&#10003;</span></td>
+                            </tr>
+                            <tr>
+                                <td>Object Lock (WORM)</td>
+                                <td><span class="hafiz-check">&#10003;</span></td>
+                                <td><span class="check">&#10003;</span></td>
+                                <td><span class="check">&#10003;</span></td>
+                            </tr>
+                            <tr>
+                                <td>S3 Select (SQL on Objects)</td>
+                                <td><span class="hafiz-check">&#10003;</span></td>
+                                <td><span class="check">&#10003;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                            </tr>
+                            <tr>
+                                <td>Erasure Coding</td>
+                                <td><span class="hafiz-check">&#10003;</span></td>
+                                <td><span class="check">&#10003;</span></td>
+                                <td><span class="check">&#10003;</span></td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td>Immutable Audit Log (Blockchain)</td>
+                                <td><span class="hafiz-check">&#10003;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td>Data Deduplication</td>
+                                <td><span class="hafiz-check">&#10003;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td>Object Compression (zstd)</td>
+                                <td><span class="hafiz-check">&#10003;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td>Temporary Bucket Sharing</td>
+                                <td><span class="hafiz-check">&#10003;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td>Object Transform Pipeline</td>
+                                <td><span class="hafiz-check">&#10003;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td>Real-Time Change Stream (SSE)</td>
+                                <td><span class="hafiz-check">&#10003;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                            </tr>
+                            <tr class="highlight-row">
+                                <td>Air-Gap Offline Sync</td>
+                                <td><span class="hafiz-check">&#10003;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                            </tr>
+                            <tr>
+                                <td>LDAP / Active Directory</td>
+                                <td><span class="hafiz-check">&#10003;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                                <td><span class="check">&#10003;</span></td>
+                            </tr>
+                            <tr>
+                                <td>Written in Rust</td>
+                                <td><span class="hafiz-check">&#10003;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                            </tr>
+                            <tr>
+                                <td>Open Source (Self-Hosted)</td>
+                                <td><span class="hafiz-check">&#10003;</span></td>
+                                <td><span class="cross">&#10007;</span></td>
+                                <td><span class="check">&#10003;</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Core Features Section -->
+    <section class="features">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <div class="section-label">Core Platform</div>
+                <h2 class="section-title">Enterprise-Grade Foundation</h2>
+                <p class="section-description">
+                    Rock-solid S3 compatibility with the security
                     and reliability your organization demands.
                 </p>
             </div>
@@ -1324,7 +1701,7 @@
                         </svg>
                     </div>
                     <h3>S3 Compatible</h3>
-                    <p>76+ S3 API endpoints. Works seamlessly with AWS CLI, SDKs, and existing S3 tools.</p>
+                    <p>90+ S3 API endpoints. Works seamlessly with AWS CLI, SDKs, and existing S3 tools.</p>
                 </div>
                 <div class="feature-card animate-on-scroll">
                     <div class="feature-icon">
@@ -1365,6 +1742,29 @@
                     <h3>Observability</h3>
                     <p>Prometheus metrics, Grafana dashboards, health endpoints, and comprehensive request tracing.</p>
                 </div>
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                            <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>
+                            <circle cx="17" cy="17" r="4"/>
+                            <path d="M20 20l1.5 1.5"/>
+                        </svg>
+                    </div>
+                    <h3>S3 Select (SQL)</h3>
+                    <p>Run SQL queries directly on CSV and JSON objects. Filter and extract data server-side without downloading.</p>
+                </div>
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            <path d="M8 10h8M8 14h8M12 10v4"/>
+                        </svg>
+                    </div>
+                    <h3>Erasure Coding</h3>
+                    <p>Reed-Solomon data protection distributes shards across nodes. Survive failures and reconstruct from partial data.</p>
+                </div>
             </div>
         </div>
     </section>
@@ -1383,7 +1783,7 @@
                             </div>
                             <div class="arch-layer-content">
                                 <h4>hafiz-s3-api</h4>
-                                <p>Axum-based HTTP layer with 76+ endpoints</p>
+                                <p>Axum-based HTTP layer with 90+ endpoints</p>
                             </div>
                         </div>
                         <div class="arch-layer">
@@ -1746,7 +2146,7 @@ aws --endpoint-url <span class="string">https://hafiz.local:9000</span> s3 cp fi
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 Hafiz. Dual licensed under AGPL-3.0 and Commercial License.</p>
+                <p>&copy; 2024-2026 Hafiz. Dual licensed under AGPL-3.0 and Commercial License.</p>
                 <div class="footer-social">
                     <a href="https://github.com/shellnoq/hafiz" target="_blank" aria-label="GitHub">
                         <svg viewBox="0 0 24 24" fill="currentColor">

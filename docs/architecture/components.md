@@ -66,3 +66,21 @@ Encryption:
 - AES-256-GCM
 - Key derivation
 - Hashing
+
+## hafiz-cluster
+
+Cluster coordination:
+
+- Gossip-based node discovery
+- Native object replication
+- Erasure coding (Reed-Solomon)
+- Shard distribution
+
+## hafiz-transform
+
+Object transform pipeline:
+
+- Thumbnail generation (image crate)
+- EXIF metadata stripping
+- Image format conversion
+- Async pipeline execution

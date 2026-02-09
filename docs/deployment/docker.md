@@ -55,7 +55,7 @@ volumes:
 
 ### Cluster Mode (3-Node with PostgreSQL)
 
-For high availability deployments, use the included cluster configuration with shared PostgreSQL metadata:
+For high availability deployments, use the included cluster configuration with shared PostgreSQL metadata and native object replication:
 
 ```bash
 # Build image first
@@ -69,14 +69,46 @@ This provides:
 
 - 3 Hafiz nodes for high availability
 - PostgreSQL for shared metadata (buckets, objects, users)
-- HAProxy for load balancing
-- True distributed storage with consistent metadata across nodes
+- **Native async object replication** across all nodes (no external tools needed)
+- HAProxy load balancing with source-based consistent hashing
+- Automatic replication of puts, deletes, and multipart uploads
 
 Access points:
 - **S3 API (direct nodes)**: http://localhost:9000, :9010, :9020
 - **S3 API (load balanced)**: http://localhost:80
 - **HAProxy Stats**: http://localhost:8404/stats
 - **PostgreSQL**: localhost:5432
+
+### Distributed Cluster (Physical Servers)
+
+For deploying across separate physical servers, see `deploy/distributed/`:
+
+```bash
+# Node1: PostgreSQL + HAProxy + Hafiz
+docker compose -f deploy/distributed/node1-compose.yml up -d
+
+# Node2: Hafiz only (connects to Node1's PostgreSQL)
+docker compose -f deploy/distributed/node2-compose.yml up -d
+
+# Node3: Hafiz only (connects to Node1's PostgreSQL)
+docker compose -f deploy/distributed/node3-compose.yml up -d
+```
+
+Objects uploaded to any node are automatically replicated to all other healthy nodes. See [deploy/distributed/README.md](../../deploy/distributed/README.md) for full details.
+
+### Running Tests
+
+```bash
+# S3 API tests (52 tests) - works on single-node or cluster
+export AWS_ACCESS_KEY_ID=hafizadmin
+export AWS_SECRET_ACCESS_KEY='HafizSecret2024!'
+bash deploy/distributed/tests/run-tests.sh
+
+# Replication tests (29 tests) - requires 3-node cluster
+bash deploy/distributed/tests/replication-tests.sh
+```
+
+**Verified: 52/52 S3 API + 29/29 Replication = 81/81 PASS**
 
 ## Environment Variables
 

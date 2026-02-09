@@ -96,6 +96,7 @@ nav:
     - Authentication: api/authentication.md
     - Buckets: api/buckets.md
     - Objects: api/objects.md
+    - S3 Compatibility: api/s3-compatibility.md
     - Error Codes: api/errors.md
   - CLI:
     - Overview: cli/index.md

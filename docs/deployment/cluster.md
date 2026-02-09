@@ -39,6 +39,8 @@ This guide covers deploying Hafiz across multiple physical servers with shared P
 │  192.168.1.10 │   │  192.168.1.11 │   │  192.168.1.12 │
 └───────┬───────┘   └───────┬───────┘   └───────┬───────┘
         │                   │                   │
+        ├── Native Async Object Replication ────┤
+        │                   │                   │
         └───────────────────┼───────────────────┘
                             │
                     ┌───────▼───────┐
@@ -46,6 +48,35 @@ This guide covers deploying Hafiz across multiple physical servers with shared P
                     │  192.168.1.5  │
                     └───────────────┘
 ```
+
+### Native Object Replication
+
+Hafiz v0.2.0 includes built-in async object replication. When a client writes an object to any node, the data is automatically replicated to all other healthy nodes in the cluster. No external tools (rclone, cron jobs) are needed for intra-cluster replication.
+
+**How it works:**
+
+1. Client uploads object to any node (via LB or direct)
+2. Node writes metadata to shared PostgreSQL and file data to local storage
+3. `Replicator` asynchronously sends file data to all other healthy nodes
+4. Target nodes store file data locally (metadata already in shared DB)
+5. Deletes and multipart uploads are also replicated automatically
+6. Loop prevention via `x-hafiz-replication-status: REPLICA` header
+
+**Key features:**
+- No configuration required - all objects replicate to all healthy nodes by default
+- PutObject, DeleteObject, and CompleteMultipartUpload events are all replicated
+- User metadata (`x-amz-meta-*`) is preserved across nodes (shared PostgreSQL)
+- Works with HAProxy source-based balancing for multipart upload compatibility
+
+**Test results (3-node cluster):**
+
+| Test Suite | Result |
+|------------|--------|
+| S3 API tests | 52/52 PASS |
+| Replication tests | 29/29 PASS |
+| Single-node tests | 52/52 PASS |
+
+Test scripts: `deploy/distributed/tests/run-tests.sh` and `deploy/distributed/tests/replication-tests.sh`
 
 ---
 

@@ -157,6 +157,19 @@ description: Hafiz - Enterprise-grade S3-compatible object storage written in Ru
 | PostgreSQL Backend | :white_check_mark: |
 | High Availability | :white_check_mark: |
 
+### Advanced (v0.3.0)
+
+| Feature | Status |
+|---------|--------|
+| S3 Select (SQL on objects) | :white_check_mark: |
+| Object Compression (zstd) | :white_check_mark: |
+| Data Deduplication (SHA-256) | :white_check_mark: |
+| Immutable Audit Log | :white_check_mark: |
+| Real-Time Change Stream (SSE) | :white_check_mark: |
+| Temporary Bucket Sharing | :white_check_mark: |
+| Object Transform Pipeline | :white_check_mark: |
+| Erasure Coding (Reed-Solomon) | :white_check_mark: |
+
 ## Comparison
 
 | Feature | Hafiz | AWS S3 |
@@ -167,6 +180,11 @@ description: Hafiz - Enterprise-grade S3-compatible object storage written in Ru
 | Written in Rust | :white_check_mark: | :x: |
 | License | Apache 2.0 | N/A |
 | Self-Hosted | :white_check_mark: | :x: |
+| S3 Select | :white_check_mark: | :white_check_mark: |
+| Object Compression | :white_check_mark: | :x: |
+| Data Deduplication | :white_check_mark: | :x: |
+| Audit Log (blockchain) | :white_check_mark: | :x: |
+| Erasure Coding | :white_check_mark: | :white_check_mark: |
 
 ## Integrations
 
