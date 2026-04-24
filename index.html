@@ -1554,6 +1554,76 @@
                     <h3>Real-Time Change Stream</h3>
                     <p>Subscribe to object changes via Server-Sent Events. Get instant notifications for creates and deletes — per-bucket or global channels.</p>
                 </div>
+                <div class="unique-card animate-on-scroll">
+                    <span class="unique-badge">New in v1.16</span>
+                    <div class="feature-icon" style="background: rgba(0, 212, 170, 0.12);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-primary);">
+                            <path d="M3 6h18M3 12h18M3 18h18"/>
+                            <circle cx="6" cy="6" r="1.5" fill="currentColor"/>
+                            <circle cx="6" cy="12" r="1.5" fill="currentColor"/>
+                            <circle cx="6" cy="18" r="1.5" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <h3>Native NFSv4 Gateway</h3>
+                    <p>Mount any bucket over standard <code>mount -t nfs4</code> — no client install, works from Linux, macOS, Windows, and ESXi. Built on Sun RPC + XDR, not a reverse proxy. MinIO and Ceph don't ship this.</p>
+                </div>
+                <div class="unique-card animate-on-scroll">
+                    <span class="unique-badge">New in v1.16</span>
+                    <div class="feature-icon" style="background: rgba(0, 168, 255, 0.12);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-secondary);">
+                            <rect x="3" y="4" width="18" height="16" rx="2"/>
+                            <path d="M3 10h18"/>
+                            <path d="M8 14l3 3 5-6"/>
+                        </svg>
+                    </div>
+                    <h3>POSIX FUSE Mount</h3>
+                    <p><code>hafiz-mount s3://bucket /mnt --rw</code> and write with <code>vim</code>, <code>cp</code>, <code>rm</code> like any local disk. Range-reads on open, single-PUT flush on close, sparse writes fill correctly — no full-object downloads.</p>
+                </div>
+                <div class="unique-card animate-on-scroll">
+                    <span class="unique-badge">New in v1.16</span>
+                    <div class="feature-icon" style="background: rgba(124, 58, 237, 0.12);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #7c3aed;">
+                            <circle cx="12" cy="5" r="2"/>
+                            <circle cx="6" cy="19" r="2"/>
+                            <circle cx="18" cy="19" r="2"/>
+                            <path d="M12 7v5M12 12l-6 5M12 12l6 5"/>
+                        </svg>
+                    </div>
+                    <h3>Rule-Based Event Bridge</h3>
+                    <p>Filter events by prefix, suffix, size, or metadata before they fan out to webhooks — with per-target retry, exponential back-off, and a dead-letter queue. Configure once, route to any downstream.</p>
+                </div>
+                <div class="unique-card animate-on-scroll">
+                    <span class="unique-badge">New in v1.16</span>
+                    <div class="feature-icon" style="background: rgba(0, 212, 170, 0.12);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-primary);">
+                            <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/>
+                            <path d="M7 7v0M17 7v0M7 17v0M17 17v0" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <h3>Schema-Aware S3 Select</h3>
+                    <p>The SQL engine infers CSV / JSON column types before executing the query, so <code>WHERE age &gt; '20'</code> returns the right rows instead of string-ordering "100" before "20". No other S3 implementation does this.</p>
+                </div>
+                <div class="unique-card animate-on-scroll">
+                    <span class="unique-badge">Enterprise</span>
+                    <div class="feature-icon" style="background: rgba(0, 168, 255, 0.12);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-secondary);">
+                            <path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z"/>
+                            <path d="M9 12l2 2 4-4"/>
+                        </svg>
+                    </div>
+                    <h3>HMAC-Signed Cluster Peers</h3>
+                    <p>Every inter-node <code>/cluster/*</code> call is wrapped in an HMAC-SHA256 envelope with ±300s freshness and constant-time signature compare. Drop a rogue node on the same network and the cluster quietly rejects it.</p>
+                </div>
+                <div class="unique-card animate-on-scroll">
+                    <span class="unique-badge">Exclusive</span>
+                    <div class="feature-icon" style="background: rgba(124, 58, 237, 0.12);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #7c3aed;">
+                            <path d="M12 2l2 5 5 1-3.5 3.5L17 17l-5-3-5 3 1.5-5.5L5 8l5-1z"/>
+                        </svg>
+                    </div>
+                    <h3>Intelligent Tiering</h3>
+                    <p>Objects migrate STANDARD → STANDARD_IA → GLACIER based on last access time, with per-bucket thresholds. Zero-config cold-data savings without a separate lifecycle engine.</p>
+                </div>
             </div>
 
             <!-- Comparison Table -->

@@ -91,6 +91,10 @@ nav:
     - Encryption: user-guide/encryption.md
     - Object Lock: user-guide/object-lock.md
     - Access Control: user-guide/access-control.md
+    - NFSv4 Mount: user-guide/nfs-mount.md
+    - POSIX FUSE Mount: user-guide/fuse-mount.md
+    - Event Bridge: user-guide/event-bridge.md
+    - S3 Select: user-guide/s3-select.md
   - API Reference:
     - Overview: api/index.md
     - Authentication: api/authentication.md
@@ -107,6 +111,7 @@ nav:
     - Kubernetes: deployment/kubernetes.md
     - Single-Node: deployment/single-node.md
     - Multi-Server Cluster: deployment/cluster.md
+    - Cluster Peer Auth: deployment/cluster-auth.md
     - TLS Configuration: deployment/tls.md
     - Production: deployment/production.md
   - Architecture:
