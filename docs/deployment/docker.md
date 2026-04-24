@@ -55,15 +55,19 @@ volumes:
 
 ### Cluster Mode (3-Node with PostgreSQL)
 
-For high availability deployments, use the included cluster configuration with shared PostgreSQL metadata and native object replication:
+For high availability deployments, use the included cluster configuration with shared PostgreSQL metadata, native object replication, and HMAC-authenticated peer gossip:
 
 ```bash
-# Build image first
-docker build -t hafiz:latest .
+cp .env.example .env
+
+# REQUIRED — cluster won't boot without this. Same value on every node.
+echo "HAFIZ_CLUSTER_SHARED_SECRET=$(openssl rand -hex 32)" >> .env
 
 # Run cluster with PostgreSQL and HAProxy load balancer
 docker compose -f docker-compose.cluster.yml up -d
 ```
+
+The compose file marks `HAFIZ_CLUSTER_SHARED_SECRET` as required, so you get a loud error instead of an unauthenticated cluster if you forget to set it. See [Cluster Peer Auth](cluster-auth.md) for the threat model and the rotation procedure.
 
 This provides:
 
@@ -112,16 +116,22 @@ bash deploy/distributed/tests/replication-tests.sh
 
 ## Environment Variables
 
+The shipped `docker-compose.yml` / `docker-compose.cluster.yml` read from `.env` in the repo root. Copy `.env.example` and fill it in — every variable that needs attention before production is marked `CHANGE_ME`.
+
 | Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `HAFIZ_ROOT_ACCESS_KEY` | Yes | - | Root access key |
-| `HAFIZ_ROOT_SECRET_KEY` | Yes | - | Root secret key |
-| `HAFIZ_S3_PORT` | No | 9000 | S3 API port |
-| `HAFIZ_STORAGE_BASE_PATH` | No | /data/hafiz | Data directory |
-| `HAFIZ_DATABASE_URL` | No | sqlite:///data/hafiz/hafiz.db | Database URL (SQLite or PostgreSQL) |
-| `HAFIZ_LOG_LEVEL` | No | info | Log level |
-| `HAFIZ_ENCRYPTION_ENABLED` | No | false | Enable SSE |
-| `POSTGRES_PASSWORD` | No | hafizpassword | PostgreSQL password (cluster mode) |
+|---|---|---|---|
+| `HAFIZ_ROOT_ACCESS_KEY` | yes | `hafizadmin` | Root access key — **change before production** |
+| `HAFIZ_ROOT_SECRET_KEY` | yes | `hafizadmin` | Root secret key — **change before production** |
+| `HAFIZ_PORT` | no | 9000 | S3 API / Admin UI / Metrics port |
+| `HAFIZ_DATA_DIR` | no | `/data/objects` | Object storage directory inside the container |
+| `HAFIZ_DATABASE_URL` | no | embedded SQLite | Switch to `postgresql://...` in cluster mode |
+| `HAFIZ_LOG_LEVEL` | no | `info` | `trace` / `debug` / `info` / `warn` / `error` |
+| `HAFIZ_CLUSTER_SHARED_SECRET` | cluster: yes | unset | HMAC key signing every `/cluster/*` request; same on every node. Generate with `openssl rand -hex 32`. |
+| `HAFIZ_EVENT_WEBHOOK_URL` | no | unset | Opt-in webhook — receives PUT / DELETE / MPU events as JSON. |
+| `HAFIZ_EVENT_WEBHOOK_AUTH_HEADER` | no | unset | `Authorization` header appended to every outgoing webhook POST. |
+| `POSTGRES_PASSWORD` | cluster: yes | `hafizpassword` | PostgreSQL password (cluster mode). |
+
+Full list with operational details: [Configuration](../getting-started/configuration.md#all-options-env-var--toml-equivalent).
 
 ## Verify Installation
 

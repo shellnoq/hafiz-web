@@ -7,6 +7,11 @@ description: Deploy Hafiz across multiple physical servers
 
 This guide covers deploying Hafiz across multiple physical servers with shared PostgreSQL metadata.
 
+!!! danger "Peer authentication is required"
+    Every cluster deployment MUST set `HAFIZ_CLUSTER_SHARED_SECRET` to the same value on every node. Without it, any peer that learns the cluster name can forge heartbeats, inject replication events, or enroll a rogue node. Generate a 32-byte secret with `openssl rand -hex 32` and store it in your secrets manager. See [Cluster Peer Auth](cluster-auth.md) for the threat model and full rotation procedure.
+
+    The shipped `docker-compose.cluster.yml` marks the variable as required — compose refuses to start without it, which is the failure mode you want.
+
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
@@ -382,11 +387,14 @@ On the first server (192.168.1.100):
 git clone https://github.com/shellnoq/hafiz.git
 cd hafiz
 
-# Create environment file
-cat > .env << 'EOF'
+# Create environment file. HAFIZ_CLUSTER_SHARED_SECRET is REQUIRED — the
+# cluster compose file refuses to boot without it, so every peer message
+# between nodes is HMAC-SHA256 signed.
+cat > .env << EOF
 POSTGRES_PASSWORD=cluster_a_password_here
 HAFIZ_ROOT_ACCESS_KEY=hafizadmin
 HAFIZ_ROOT_SECRET_KEY=your_secret_key_here
+HAFIZ_CLUSTER_SHARED_SECRET=$(openssl rand -hex 32)
 EOF
 
 # Build the Docker image
@@ -398,6 +406,9 @@ docker compose -f docker-compose.cluster.yml up -d
 # Verify all containers are running
 docker ps
 ```
+
+!!! warning "The shared secret is per-cluster, not per-node"
+    Every node in a single cluster needs the **same** `HAFIZ_CLUSTER_SHARED_SECRET`. Generate it once, commit to a secrets manager, mirror into every node's `.env`. Rotating? Follow [Cluster Peer Auth → Rotating the secret](cluster-auth.md#rotating-the-secret).
 
 Expected output:
 ```
@@ -439,10 +450,14 @@ git clone https://github.com/shellnoq/hafiz.git
 cd hafiz
 
 # Create environment file with DIFFERENT credentials
-cat > .env << 'EOF'
+# Note: for cross-cluster replication (A→B), the two clusters are
+# independent and each has its own shared secret — they do NOT need to
+# match. Only peers within the same cluster need the same value.
+cat > .env << EOF
 POSTGRES_PASSWORD=cluster_b_password_here
 HAFIZ_ROOT_ACCESS_KEY=hafizadmin
 HAFIZ_ROOT_SECRET_KEY=your_secret_key_here
+HAFIZ_CLUSTER_SHARED_SECRET=$(openssl rand -hex 32)
 EOF
 
 # Build the Docker image
@@ -793,6 +808,11 @@ docker run -d \
   -e HAFIZ_DATABASE_URL="postgresql://hafiz:your_password@192.168.1.5:5432/hafiz" \
   -e HAFIZ_ROOT_ACCESS_KEY="hafizadmin" \
   -e HAFIZ_ROOT_SECRET_KEY="your_secret_key" \
+  -e HAFIZ_CLUSTER_ENABLED=true \
+  -e HAFIZ_CLUSTER_NAME=hafiz-production \
+  -e HAFIZ_CLUSTER_ADVERTISE_ENDPOINT="http://$(hostname -I | awk '{print $1}'):9000" \
+  -e HAFIZ_CLUSTER_SEED_NODES="http://192.168.1.10:9000" \
+  -e HAFIZ_CLUSTER_SHARED_SECRET="${HAFIZ_CLUSTER_SHARED_SECRET:?set to the value generated on node1}" \
   hafiz:latest
 ```
 
@@ -1026,7 +1046,8 @@ psql postgresql://hafiz:your_password@192.168.1.5:5432/hafiz -c "SELECT 1"
 ### Step 3: Deploy Hafiz Node
 
 ```bash
-# Deploy with the same configuration as existing nodes
+# Deploy with the same configuration as existing nodes. Note the
+# HAFIZ_CLUSTER_SHARED_SECRET must be the same value as on the seed.
 docker run -d \
   --name hafiz \
   --restart unless-stopped \
@@ -1035,7 +1056,12 @@ docker run -d \
   -e HAFIZ_DATABASE_URL="postgresql://hafiz:your_password@192.168.1.5:5432/hafiz" \
   -e HAFIZ_ROOT_ACCESS_KEY="hafizadmin" \
   -e HAFIZ_ROOT_SECRET_KEY="your_secret_key" \
-  -e HAFIZ_STORAGE_BASE_PATH="/data/objects" \
+  -e HAFIZ_DATA_DIR="/data/objects" \
+  -e HAFIZ_CLUSTER_ENABLED=true \
+  -e HAFIZ_CLUSTER_NAME=hafiz-production \
+  -e HAFIZ_CLUSTER_ADVERTISE_ENDPOINT="http://$(hostname -I | awk '{print $1}'):9000" \
+  -e HAFIZ_CLUSTER_SEED_NODES="http://192.168.1.10:9000" \
+  -e HAFIZ_CLUSTER_SHARED_SECRET="${HAFIZ_CLUSTER_SHARED_SECRET:?same value as the rest of the cluster}" \
   hafiz:latest
 ```
 
@@ -1078,11 +1104,16 @@ You can add multiple servers at once using a deployment script:
 ```bash
 #!/bin/bash
 # deploy-nodes.sh
+set -euo pipefail
 
 NODES=("192.168.1.14" "192.168.1.15" "192.168.1.16")
+SEED_URL="http://192.168.1.10:9000"
 POSTGRES_URL="postgresql://hafiz:your_password@192.168.1.5:5432/hafiz"
 ACCESS_KEY="hafizadmin"
 SECRET_KEY="your_secret_key"
+CLUSTER_NAME="hafiz-production"
+# Required: same value as the seed node. Fail fast if it's not set.
+: "${HAFIZ_CLUSTER_SHARED_SECRET:?export before running this script}"
 
 for node in "${NODES[@]}"; do
     echo "Deploying to $node..."
@@ -1094,7 +1125,12 @@ for node in "${NODES[@]}"; do
         -e HAFIZ_DATABASE_URL='$POSTGRES_URL' \
         -e HAFIZ_ROOT_ACCESS_KEY='$ACCESS_KEY' \
         -e HAFIZ_ROOT_SECRET_KEY='$SECRET_KEY' \
-        -e HAFIZ_STORAGE_BASE_PATH='/data/objects' \
+        -e HAFIZ_DATA_DIR='/data/objects' \
+        -e HAFIZ_CLUSTER_ENABLED=true \
+        -e HAFIZ_CLUSTER_NAME='$CLUSTER_NAME' \
+        -e HAFIZ_CLUSTER_ADVERTISE_ENDPOINT='http://$node:9000' \
+        -e HAFIZ_CLUSTER_SEED_NODES='$SEED_URL' \
+        -e HAFIZ_CLUSTER_SHARED_SECRET='$HAFIZ_CLUSTER_SHARED_SECRET' \
         hafiz:latest"
 done
 
@@ -1184,7 +1220,9 @@ EOF
 #### Deploy Secondary Nodes
 
 ```bash
-# On secondary nodes, connect to local PostgreSQL replica
+# On secondary nodes, connect to local PostgreSQL replica. The secondary
+# site runs as its own cluster with its own shared secret — it's a
+# separate replication target, not a peer of the primary.
 docker run -d \
   --name hafiz \
   --restart unless-stopped \
@@ -1193,6 +1231,10 @@ docker run -d \
   -e HAFIZ_DATABASE_URL="postgresql://hafiz:password@10.0.1.5:5432/hafiz" \
   -e HAFIZ_ROOT_ACCESS_KEY="hafizadmin" \
   -e HAFIZ_ROOT_SECRET_KEY="your_secret_key" \
+  -e HAFIZ_CLUSTER_ENABLED=true \
+  -e HAFIZ_CLUSTER_NAME=hafiz-secondary \
+  -e HAFIZ_CLUSTER_ADVERTISE_ENDPOINT="http://$(hostname -I | awk '{print $1}'):9000" \
+  -e HAFIZ_CLUSTER_SHARED_SECRET="${HAFIZ_CLUSTER_SHARED_SECRET:?secondary cluster needs its own secret}" \
   hafiz:latest
 ```
 

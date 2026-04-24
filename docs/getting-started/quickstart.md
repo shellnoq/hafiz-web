@@ -5,38 +5,43 @@ description: Get Hafiz running in 5 minutes
 
 # Quick Start
 
-Get Hafiz running in under 5 minutes.
+Hafiz up and running in three commands.
 
 ## Prerequisites
 
-- Docker (recommended) or
-- Rust 1.85+ (for building from source)
+- Docker Engine (compose v2) — only real requirement
+- `openssl` if you're deploying the cluster (generates the peer-auth secret)
 
-## Docker (Build Locally)
-
-Since Hafiz is still in active development, you'll need to build the Docker image locally:
+## Single-node
 
 ```bash
-# Clone and build
 git clone https://github.com/shellnoq/hafiz.git
 cd hafiz
-docker build -t hafiz:local .
-
-# Run container with persistent storage
-docker run -d \
-  --name hafiz \
-  -p 9000:9000 \
-  -v hafiz-data:/data \
-  -e HAFIZ_ROOT_ACCESS_KEY=hafizadmin \
-  -e HAFIZ_ROOT_SECRET_KEY=hafizadmin \
-  hafiz:local
+cp .env.example .env                    # edit: set HAFIZ_ROOT_SECRET_KEY
+docker compose up -d
 ```
 
-That's it! Hafiz is now running:
+Hafiz is now running:
 
 - **S3 API**: http://localhost:9000
 - **Admin UI**: http://localhost:9000/admin
 - **Metrics**: http://localhost:9000/metrics
+
+## Cluster (3 nodes + PostgreSQL + HAProxy)
+
+```bash
+git clone https://github.com/shellnoq/hafiz.git
+cd hafiz
+cp .env.example .env
+echo "HAFIZ_CLUSTER_SHARED_SECRET=$(openssl rand -hex 32)" >> .env
+docker compose -f docker-compose.cluster.yml up -d
+```
+
+The cluster file requires the shared secret — compose exits with a clear error if it's missing, so you can't accidentally ship an unauthenticated deployment. See [Cluster Peer Auth](../deployment/cluster-auth.md) for details.
+
+- **S3 API (via HAProxy)**: http://localhost
+- **HAProxy Stats**: http://localhost:8404
+- **Direct node access**: 9000, 9010, 9020
 
 ## Verify Installation
 
@@ -98,31 +103,6 @@ hafiz ls s3://
 hafiz mb s3://my-bucket
 hafiz cp file.txt s3://my-bucket/
 ```
-
-## Docker Compose
-
-For a quick start with Docker Compose:
-
-```bash
-git clone https://github.com/shellnoq/hafiz.git
-cd hafiz
-docker compose up -d
-```
-
-For a production setup with PostgreSQL, use the cluster configuration:
-
-```bash
-# Build image first
-docker build -t hafiz:latest .
-
-# Run cluster with PostgreSQL and HAProxy
-docker compose -f docker-compose.cluster.yml up -d
-```
-
-Access via load balancer:
-
-- **S3 API**: http://localhost (via HAProxy)
-- **HAProxy Stats**: http://localhost:8404
 
 ## Next Steps
 
