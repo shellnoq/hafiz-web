@@ -41,15 +41,19 @@ sudo mount -t nfs -o nfsvers=4,rw gateway.example.com:/ /mnt/hafiz
 
 ## What's implemented today
 
-| COMPOUND op | Status |
+| Capability | Status |
 |---|---|
-| `NULL` | full |
-| `PUTROOTFH` | full |
-| `GETFH` | full |
-| `GETATTR` | mandatory attrs (TYPE, SIZE, CHANGE, FSID, LEASE_TIME, FILEID, etc.) |
-| `READDIR`, `OPEN`, `READ`, `WRITE`, `CLOSE` | stubbed with `NFS4ERR_NOTSUPP` — coming in the next release |
+| `mount -t nfs4 -o vers=4.0` | ✅ live, Linux kernel + macOS NFS client |
+| `ls`, `cat`, `stat`, `find` | ✅ |
+| `echo > file`, `cp`, `dd` (1 MiB+) | ✅ |
+| `rm`, `mv` (rename), `mkdir`, `truncate` | ✅ |
+| `chmod` / `chown` | ✅ accepted (S3 has no mode bits — silently no-op) |
+| NFSv4.1 sessions (`-o vers=4.1`) | ❌ next slice (EXCHANGE_ID / CREATE_SESSION / SEQUENCE) |
+| File locks (`flock`, `fcntl(F_SETLK)`) | ❌ — mount with `-o nolock` for now |
+| Hard / symbolic links | ❌ S3 has no symlink primitive |
+| `cp -p` preserving permissions | partial — bytes copy, mode/owner are no-ops |
 
-You can already mount the root filehandle and inspect attributes. The read-side ops land next; writes will land with multipart support so large files don't buffer in the client.
+Use `mount -t nfs4 -o vers=4.0,proto=tcp,port=2049,sec=sys,nolock host:/ /mnt`. Modern Linux defaults to v4.1; force v4.0 with the explicit `vers=4.0` until slice 3 lands.
 
 ## Security
 
