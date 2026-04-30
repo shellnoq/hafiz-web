@@ -43,12 +43,13 @@ sudo mount -t nfs -o nfsvers=4,rw gateway.example.com:/ /mnt/hafiz
 
 | Capability | Status |
 |---|---|
-| `mount -t nfs4 -o vers=4.0` | ✅ live, Linux kernel + macOS NFS client |
+| `mount -t nfs4 -o vers=4.0` | ✅ live, Linux kernel + macOS NFS client (9/9 ops) |
+| `mount -t nfs4 -o vers=4.1` (kernel default) | ✅ session protocol — EXCHANGE_ID + CREATE_SESSION + SEQUENCE |
 | `ls`, `cat`, `stat`, `find` | ✅ |
 | `echo > file`, `cp`, `dd` (1 MiB+) | ✅ |
 | `rm`, `mv` (rename), `mkdir`, `truncate` | ✅ |
 | `chmod` / `chown` | ✅ accepted (S3 has no mode bits — silently no-op) |
-| NFSv4.1 sessions (`-o vers=4.1`) | ❌ next slice (EXCHANGE_ID / CREATE_SESSION / SEQUENCE) |
+| v4.1 overwrite + truncate of existing file | ⚠️ partial — kernel switches to CLAIM_FH/CLAIM_PREVIOUS, not yet wired |
 | File locks (`flock`, `fcntl(F_SETLK)`) | ❌ — mount with `-o nolock` for now |
 | Hard / symbolic links | ❌ S3 has no symlink primitive |
 | `cp -p` preserving permissions | partial — bytes copy, mode/owner are no-ops |
