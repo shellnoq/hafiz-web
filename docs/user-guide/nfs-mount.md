@@ -49,8 +49,10 @@ sudo mount -t nfs -o nfsvers=4,rw gateway.example.com:/ /mnt/hafiz
 | `echo > file`, `cp`, `dd` (1 MiB+) | ✅ |
 | `rm`, `mv` (rename), `mkdir`, `truncate` | ✅ |
 | `chmod` / `chown` | ✅ accepted (S3 has no mode bits — silently no-op) |
-| v4.1 overwrite + truncate of existing file | ⚠️ partial — kernel switches to CLAIM_FH/CLAIM_PREVIOUS, not yet wired |
-| File locks (`flock`, `fcntl(F_SETLK)`) | ❌ — mount with `-o nolock` for now |
+| v4.1 overwrite + truncate of existing file | ✅ CLAIM_FH / CLAIM_PREVIOUS wired in slice 4 |
+| Byte-range locks (LOCK / LOCKT / LOCKU) | ✅ in-memory lock table; `flock` + `fcntl(F_SETLK)` work without `-o nolock` |
+| Hard / symbolic links | ❌ S3 has no symlink primitive |
+| `cp -p` preserving permissions | partial — bytes copy, mode/owner are no-ops |
 | Hard / symbolic links | ❌ S3 has no symlink primitive |
 | `cp -p` preserving permissions | partial — bytes copy, mode/owner are no-ops |
 

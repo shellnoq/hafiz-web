@@ -125,6 +125,8 @@ nav:
     - Troubleshooting: operations/troubleshooting.md
   - Integrations:
     - Overview: integrations/index.md
+    - Kubernetes NFS CSI: integrations/kubernetes-nfs.md
+    - VMware vSphere Datastore: integrations/vsphere-datastore.md
     - Nextcloud: integrations/nextcloud.md
     - Rclone: integrations/rclone.md
   - Development:
